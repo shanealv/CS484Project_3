@@ -1,5 +1,6 @@
 #include "NetworkLink.h"
 #include "Packet.h"
+#include "RandomGen.h"
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -13,8 +14,9 @@ NetworkLink::NetworkLink(int id, shared_ptr<NetworkNode>& nodeA, shared_ptr<Netw
 	_nodeB = nodeB;
 	_id = id;
 	_droppedPackets = 0;
-	_bandwidth = 7;
-	// TODO: generate bandwidth
+	_bandwidth = RandomGen::Uniform();
+	if (_bandwidth == 0.0)
+		_bandwidth = 1.0;
 }
 
 double NetworkLink::GetBandwidth()
@@ -22,44 +24,57 @@ double NetworkLink::GetBandwidth()
 	return _bandwidth;
 }
 
-queue<weak_ptr<Packet>>& NetworkLink::GetInputQueue(int endNodeId)
+queue<weak_ptr<Packet>>& NetworkLink::GetInputQueue(int sourceId)
 {
-	if (_nodeA->GetId == endNodeId)
+	if (_nodeA->GetId == sourceId)
 		return _inputQueueA;
-	else if (_nodeB->GetId == endNodeId)
+	else if (_nodeB->GetId == sourceId)
 		return _inputQueueB;
 	else
-		throw invalid_argument("endNodeId not found on this link");
+		throw invalid_argument("sourceId not found on this link");
 }
 
-std::queue<std::weak_ptr<Packet>>& NetworkLink::GetOutputQueue(int endNodeId)
+std::queue<std::weak_ptr<Packet>>& NetworkLink::GetOutputQueue(int destinationId)
 {
-	if (_nodeA->GetId == endNodeId)
+	if (_nodeA->GetId == destinationId)
 		return _outputQueueA;
-	else if (_nodeB->GetId == endNodeId)
+	else if (_nodeB->GetId == destinationId)
 		return _outputQueueB;
 	else
-		throw invalid_argument("endNodeId not found on this link");
+		throw invalid_argument("destinationId not found on this link");
 }
 
-void NetworkLink::AddToInputQueue(int endNodeId, std::shared_ptr<Packet>& packet)
+void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
 {
-	auto& queue = GetInputQueue(endNodeId);
+	auto& queue = GetInputQueue(sourceId);
+	int size = queue.size();
+	if (size < NetworkLink::QueueLimit)
+	{
+		queue.push(packet); // TODO queue action with dispatcher
+		return;
+	}
+
+	// drop packet
+	if (_nodeA->GetId == sourceId)
+		_nodeA->DropPacket();
+	else if (_nodeB->GetId == sourceId)
+		_nodeB->DropPacket();
+}
+
+void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& packet)
+{
+	auto& queue = GetOutputQueue(destinationId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
 	{
 		queue.push(packet); // TODO queue action with dispatcher
 	}
-}
 
-void NetworkLink::AddToOutputQueue(int endNodeId, std::shared_ptr<Packet>& packet)
-{
-	auto& queue = GetOutputQueue(endNodeId);
-	int size = queue.size();
-	if (size < NetworkLink::QueueLimit)
-	{
-		queue.push(packet); // TODO queue action with dispatcher
-	}
+	// drop packet
+	if (_nodeA->GetId == destinationId)
+		_nodeA->DropPacket();
+	else if (_nodeB->GetId == destinationId)
+		_nodeB->DropPacket();
 }
 
 void NetworkLink::Propagate()
@@ -71,9 +86,8 @@ void NetworkLink::Propagate()
 		_inputQueueA.pop();
 		if (auto packet = weakPacket.lock())
 		{
-			int delay = 4; // TODO calculate delay
-			packet->AddDelay(delay);
-			_totalDelay += delay;
+			int propagationDelay = RandomGen::Uniform(1.0, 10.0);
+			_totalDelay += propagationDelay;
 			_numPackets++;
 			if (_outputQueueB.size() < NetworkLink::QueueLimit)
 				_outputQueueB.push(packet); // TODO queue action with dispatcher using delay
@@ -94,9 +108,8 @@ void NetworkLink::Propagate()
 		_inputQueueB.pop();
 		if (auto packet = weakPacket.lock())
 		{
-			int delay = 4; // TODO calculate delay
-			packet->AddDelay(delay);
-			_totalDelay += delay;
+			int propagationDelay = 4; RandomGen::Uniform(1.0, 10.0);
+			_totalDelay += propagationDelay;
 			_numPackets++;
 			if (_outputQueueA.size() < NetworkLink::QueueLimit)
 				_outputQueueA.push(packet); // TODO queue action with dispatcher using delay

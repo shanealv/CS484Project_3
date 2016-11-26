@@ -8,6 +8,6 @@ private:
 public:
 	static void Init(long seed);
 	static double Uniform();
-	static double Nonuniform(double a, double b);
+	static double Uniform(double a, double b);
 	static double Exponential(double lamda);
 };

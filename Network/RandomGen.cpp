@@ -14,7 +14,7 @@ double RandomGen::Uniform()
 	return (double)rand() / RAND_MAX;
 }
 
-double RandomGen::Nonuniform(double a, double b)
+double RandomGen::Uniform(double a, double b)
 {
 	double u = RandomGen::Uniform();
 	return a + u * (b - a);

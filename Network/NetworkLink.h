@@ -23,11 +23,11 @@ public:
 	NetworkLink(int id, std::shared_ptr<NetworkNode>& nodeA, std::shared_ptr<NetworkNode>& nodeB);
 	static const int QueueLimit = 30;
 	double GetBandwidth();
-	std::queue<std::weak_ptr<Packet>>& GetInputQueue(int endNodeId);
-	std::queue<std::weak_ptr<Packet>>& GetOutputQueue(int endNodeId);
+	std::queue<std::weak_ptr<Packet>>& GetInputQueue(int sourceId);
+	std::queue<std::weak_ptr<Packet>>& GetOutputQueue(int destinationId);
 
-	void AddToInputQueue(int endNodeId, std::shared_ptr<Packet>& packet);
-	void AddToOutputQueue(int endNodeId, std::shared_ptr<Packet>& packet);
+	void AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet);
+	void AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& packet);
 
 	void Propagate();
 

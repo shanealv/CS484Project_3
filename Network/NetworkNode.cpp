@@ -1,10 +1,12 @@
 #include "NetworkNode.h"
+#include "NetworkLink.h"
+#include "Packet.h"
+#include "RandomGen.h"
+#include "Dispatcher.h"
 #include <cstdbool>
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "NetworkLink.h"
-#include "Packet.h"
 
 using namespace std;
 
@@ -26,6 +28,7 @@ void NetworkNode::AddLink(shared_ptr<NetworkLink>& link)
 void NetworkNode::RoutePacket(shared_ptr<Packet> & packet)
 {
 	int dest = packet->GetDestination();
+	double processingDelay = RandomGen::Exponential(1.0);
 	if (dest == _id)
 	{
 		packet->OnArrive();
@@ -35,30 +38,20 @@ void NetworkNode::RoutePacket(shared_ptr<Packet> & packet)
 	int linkIdx = _routingTable[dest];
 
 	if (auto link = _links[linkIdx].lock())
-	{
-		if (link->GetInputQueue(_id).size() < NetworkLink::QueueLimit)
-			link->AddToInputQueue(_id, packet); // TODO: change to queue up action for dispatch
-		else
-			DropPacket();
-	}
+		link->AddToInputQueue(_id, packet); // TODO: change to queue up action for dispatch
 	else
 		cerr << "Link has expired" << endl;
 }
 
 void NetworkNode::CreateAndSendPacket(int destination)
 {
-	int size = 3; // TODO, generate size
+	int size = RandomGen::Uniform(0.1, 1);
 	auto packet = make_shared<Packet>(new Packet(size, destination));
 
 	int linkIdx = _routingTable[destination];
 
 	if (auto link = _links[linkIdx].lock())
-	{
-		if (link->GetInputQueue(_id).size() < NetworkLink::QueueLimit)
-			link->AddToInputQueue(_id, packet); // TODO: change to queue up action for dispatch
-		else
-			DropPacket();
-	}
+		link->AddToInputQueue(_id, packet); // TODO: change to queue up action for dispatch
 	else
 		cerr << "Link has expired" << endl;
 }

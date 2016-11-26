@@ -1,18 +1,16 @@
-
 #include "Packet.h"
+#include "Dispatcher.h"
 
 int Packet::NextId = 0;
 int Packet::NumArrived = 0;
-
-int Packet::GetNextId()
-{
-	return NextId++;
-}
+int Packet::TotalDelay = 0;
 
 Packet::Packet(int size, int destination)
 {
+	_id = Packet::GetNextId();
 	_size = size;
 	_destination = destination;
+	_creationTime = Dispatcher::GetCurrentTime();
 }
 
 int Packet::GetSize()
@@ -25,27 +23,28 @@ int Packet::GetDestination()
 	return _destination;
 }
 
-double Packet::GetDelay()
+int Packet::GetCreationTime()
 {
-	return _delay;
-}
-
-void Packet::AddDelay(double delay)
-{
-	_delay += delay;
-}
-
-void Packet::SetDelay(double delay)
-{
-	_delay = delay;
+	return _creationTime;
 }
 
 void Packet::OnArrive()
 {
-	NumArrived++;
+	Packet::NumArrived++;
+	Packet::TotalDelay += Dispatcher::GetCurrentTime() - _creationTime;
 }
 
 int Packet::GetTotalPackets()
 {
-	return NextId;
+	return Packet::NextId;
+}
+
+int Packet::GetTotalArrived()
+{
+	return Packet::NumArrived;
+}
+
+int Packet::GetTotalDelay()
+{
+	return Packet::TotalDelay;
 }
