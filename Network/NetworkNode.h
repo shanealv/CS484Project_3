@@ -12,18 +12,24 @@ class NetworkNode
 private:
 	int _id;
 	bool _isSourceOrDestination;
-	int _totalPackets = 0;
 	int _droppedPackets = 0;
 	double _totalDelay = 0.0;
-	std::array<std::array<int, 150>, 150> routingTable;
-	std::vector<std::shared_ptr<NetworkLink>> _links;
+	std::array<int, 150> _routingTable;
+	std::vector<std::weak_ptr<NetworkLink>> _links;
 public:
-	std::vector<std::shared_ptr<NetworkLink>> GetLinks();
-	void RoutePacket(std::shared_ptr<Packet> packet);
+	NetworkNode(int id);
+
+	std::vector<std::weak_ptr<NetworkLink>> GetLinks();
+	void AddLink(std::shared_ptr<NetworkLink> & link);
+
+	void RoutePacket(std::shared_ptr<Packet> & packet);
 	void CreateAndSendPacket(int destination);
 
 	bool GetIsSourceOrDestination();
 	void SetIsSourceOrDestination(bool isSourceOrDestination);
+
+	int GetDroppedPackets();
+	void DropPacket();
 
 	int GetId();
 };

@@ -1,13 +1,15 @@
 #pragma once
 
-
-
 class Packet
 {
-public:
+private:
+	static int NextId;
+	static int NumArrived;
 	int _size = -1;
 	int _destination = -1;
 	double _delay = 0.0;
+
+	int GetNextId();
 public:
 	Packet(int size, int destination);
 	int GetSize();
@@ -15,4 +17,6 @@ public:
 	double GetDelay();
 	void AddDelay(double delay);
 	void SetDelay(double delay);
+	void OnArrive();
+	static int GetTotalPackets();
 };
