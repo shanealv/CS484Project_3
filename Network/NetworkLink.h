@@ -11,7 +11,7 @@ private:
 	int _id;
 	int _numPackets;
 	int _droppedPackets;
-	double _totalDelay;
+	int _totalDelay;
 	double _bandwidth;
 	std::shared_ptr<NetworkNode> _nodeA;
 	std::shared_ptr<NetworkNode> _nodeB;

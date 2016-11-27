@@ -5,6 +5,11 @@ int Packet::NextId = 0;
 int Packet::NumArrived = 0;
 int Packet::TotalDelay = 0;
 
+int Packet::GetNextId()
+{
+	return 
+}
+
 Packet::Packet(int size, int destination)
 {
 	_id = Packet::GetNextId();

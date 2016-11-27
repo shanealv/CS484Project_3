@@ -13,7 +13,7 @@ private:
 	int _id;
 	bool _isSourceOrDestination;
 	int _droppedPackets = 0;
-	double _totalDelay = 0.0;
+	int _totalDelay = 0;
 	std::array<int, 150> _routingTable;
 	std::vector<std::weak_ptr<NetworkLink>> _links;
 public:
