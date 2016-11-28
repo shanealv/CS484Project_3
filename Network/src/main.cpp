@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "Job.h"
 
 using namespace std;
 
