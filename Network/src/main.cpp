@@ -1,6 +1,7 @@
 #include "NetworkNode.h"
 #include "NetworkLink.h"
 #include "RandomGen.h"
+#include <array>
 #include <cstdbool>
 #include <fstream>
 #include <sstream>
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < numEdges; i++)
 		cout << edges[i] << endl;
 
-
+	array<vector<int
 }
 
 void PrintHelp()

@@ -1,6 +1,6 @@
 CC = g++
 
-CPP_FILES := $(wildcard *.cpp)
+CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
 CC_FLAGS := -std=c++0x -g -DDEBUG -MMD
@@ -13,11 +13,11 @@ all: ./obj main.exe
 main.exe: $(OBJ_FILES)
 	$(CC) $(LD_FLAGS) -o $@ $^
 
-obj/%.o: %.cpp
+obj/%.o: src/%.cpp
 	$(CC) $(CC_FLAGS) -c $^ -o $@
 
 clean:
-	rm -f -r obj
+	rm -f -r obj main.exe
 
 rebuild: clean all
 
