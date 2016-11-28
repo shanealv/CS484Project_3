@@ -5,7 +5,6 @@
 
 void RandomGen::Init(long seed)
 {
-	RandomGen::Seed = seed;
 	srand(seed);
 }
 

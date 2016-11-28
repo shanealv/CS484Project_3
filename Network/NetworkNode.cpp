@@ -46,7 +46,7 @@ void NetworkNode::RoutePacket(shared_ptr<Packet> & packet)
 void NetworkNode::CreateAndSendPacket(int destination)
 {
 	int size = RandomGen::Uniform(0.1, 1);
-	auto packet = make_shared<Packet>(new Packet(size, destination));
+	auto packet = shared_ptr<Packet>(new Packet(size, destination));
 
 	int linkIdx = _routingTable[destination];
 

@@ -1,13 +1,16 @@
 #pragma once
 
+#include "NetworkLink.h"
+#include "Packet.h"
 #include <array>
 #include <cstdbool>
 #include <list>
 #include <memory>
 #include <vector>
-#include "Packet.h"
 
-class NetworkNode
+class NetworkLink;
+
+class NetworkNode 
 {
 private:
 	int _id;
@@ -15,7 +18,7 @@ private:
 	int _droppedPackets = 0;
 	int _totalDelay = 0;
 	std::array<int, 150> _routingTable;
-	std::vector<std::weak_ptr<NetworkLink>> _links;
+	std::vector<std::weak_ptr<NetworkLink>> _links; // does not own pointer, but can reasonable expect them to exist
 public:
 	NetworkNode(int id);
 

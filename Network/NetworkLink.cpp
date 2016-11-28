@@ -1,4 +1,5 @@
 #include "NetworkLink.h"
+#include "NetworkNode.h"
 #include "Packet.h"
 #include "RandomGen.h"
 #include <exception>
@@ -13,7 +14,6 @@ NetworkLink::NetworkLink(int id, shared_ptr<NetworkNode>& nodeA, shared_ptr<Netw
 	_nodeA = nodeA;
 	_nodeB = nodeB;
 	_id = id;
-	_droppedPackets = 0;
 	_bandwidth = RandomGen::Uniform();
 	if (_bandwidth == 0.0)
 		_bandwidth = 1.0;
@@ -24,21 +24,25 @@ double NetworkLink::GetBandwidth()
 	return _bandwidth;
 }
 
-queue<weak_ptr<Packet>>& NetworkLink::GetInputQueue(int sourceId)
+queue<shared_ptr<Packet>>& NetworkLink::GetInputQueue(int sourceId)
 {
-	if (_nodeA->GetId == sourceId)
+	auto nodeA = _nodeA.lock();
+	auto nodeB = _nodeB.lock();
+	if (nodeA->GetId() == sourceId)
 		return _inputQueueA;
-	else if (_nodeB->GetId == sourceId)
+	else if (nodeB->GetId() == sourceId)
 		return _inputQueueB;
 	else
 		throw invalid_argument("sourceId not found on this link");
 }
 
-std::queue<std::weak_ptr<Packet>>& NetworkLink::GetOutputQueue(int destinationId)
+std::queue<std::shared_ptr<Packet>>& NetworkLink::GetOutputQueue(int destinationId)
 {
-	if (_nodeA->GetId == destinationId)
+	auto nodeA = _nodeA.lock();
+	auto nodeB = _nodeB.lock();
+	if (nodeA->GetId() == destinationId)
 		return _outputQueueA;
-	else if (_nodeB->GetId == destinationId)
+	else if (nodeB->GetId() == destinationId)
 		return _outputQueueB;
 	else
 		throw invalid_argument("destinationId not found on this link");
@@ -46,6 +50,8 @@ std::queue<std::weak_ptr<Packet>>& NetworkLink::GetOutputQueue(int destinationId
 
 void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
 {
+	auto nodeA = _nodeA.lock();
+	auto nodeB = _nodeB.lock();
 	auto& queue = GetInputQueue(sourceId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
@@ -55,14 +61,16 @@ void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
 	}
 
 	// drop packet
-	if (_nodeA->GetId == sourceId)
-		_nodeA->DropPacket();
-	else if (_nodeB->GetId == sourceId)
-		_nodeB->DropPacket();
+	if (nodeA->GetId() == sourceId)
+		nodeA->DropPacket();
+	else if (nodeB->GetId() == sourceId)
+		nodeB->DropPacket();
 }
 
 void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& packet)
 {
+	auto nodeA = _nodeA.lock();
+	auto nodeB = _nodeB.lock();
 	auto& queue = GetOutputQueue(destinationId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
@@ -71,56 +79,48 @@ void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& p
 	}
 
 	// drop packet
-	if (_nodeA->GetId == destinationId)
-		_nodeA->DropPacket();
-	else if (_nodeB->GetId == destinationId)
-		_nodeB->DropPacket();
+	if (nodeA->GetId() == destinationId)
+		nodeA->DropPacket();
+	else if (nodeB->GetId() == destinationId)
+		nodeB->DropPacket();
 }
 
 void NetworkLink::Propagate()
 {
+	auto nodeA = _nodeA.lock();
+	auto nodeB = _nodeB.lock();
 	// Input A -> Output B
 	if (!_inputQueueA.empty())
 	{
-		auto weakPacket = _inputQueueA.front();
+		auto packet = _inputQueueA.front();
 		_inputQueueA.pop();
-		if (auto packet = weakPacket.lock())
-		{
-			int propagationDelay = RandomGen::Uniform(1.0, 10.0);
-			_totalDelay += propagationDelay;
-			_numPackets++;
-			if (_outputQueueB.size() < NetworkLink::QueueLimit)
-				_outputQueueB.push(packet); // TODO queue action with dispatcher using delay
-			else
-			{
-				_droppedPackets++;
-				_nodeB->DropPacket();
-			}
-		}
+		int propagationDelay = RandomGen::Uniform(1.0, 10.0);
+		_totalDelay += propagationDelay;
+		_numPackets++;
+		if (_outputQueueB.size() < NetworkLink::QueueLimit)
+			_outputQueueB.push(packet); // TODO queue action with dispatcher using delay
 		else
-			cerr << "Packet has Expired" << endl;
+		{
+			_droppedPackets++;
+			nodeB->DropPacket();
+		}
 	}
 
 	// Input B -> Output A
 	if (!_inputQueueB.empty())
 	{
-		auto weakPacket = _inputQueueB.front();
+		auto packet = _inputQueueB.front();
 		_inputQueueB.pop();
-		if (auto packet = weakPacket.lock())
-		{
-			int propagationDelay = 4; RandomGen::Uniform(1.0, 10.0);
-			_totalDelay += propagationDelay;
-			_numPackets++;
-			if (_outputQueueA.size() < NetworkLink::QueueLimit)
-				_outputQueueA.push(packet); // TODO queue action with dispatcher using delay
-			else
-			{
-				_droppedPackets++;
-				_nodeA->DropPacket();
-			}
-		}
+		int propagationDelay = 4; RandomGen::Uniform(1.0, 10.0);
+		_totalDelay += propagationDelay;
+		_numPackets++;
+		if (_outputQueueA.size() < NetworkLink::QueueLimit)
+			_outputQueueA.push(packet); // TODO queue action with dispatcher using delay
 		else
-			cerr << "Packet has Expired" << endl;
+		{
+			_droppedPackets++;
+			nodeA->DropPacket();
+		}
 	}
 }
 
@@ -138,6 +138,23 @@ double NetworkLink::GetTotalDelay()
 {
 	return _totalDelay;
 }
+
+ostream& operator<<(ostream& os, shared_ptr<NetworkLink>& link)
+{
+	os << *link.get();
+}
+
+ostream& operator<<(ostream& os, const NetworkLink& link)
+{
+	os << "Link: " << link._id;
+	os << " A: " << link._nodeA.lock()->GetId();
+	os << " B: " << link._nodeB.lock()->GetId();
+	os << " Pkts: " << link._numPackets;
+	os << " Drop: " << link._droppedPackets;
+	os << " Delay: " << link._totalDelay;
+	os << " Bandw: " << link._bandwidth;
+}
+
 
 int NetworkLink::GetId()
 {
