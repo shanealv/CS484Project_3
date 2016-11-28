@@ -19,7 +19,7 @@ private:
 	JobType job;
 public:
 	Job();
-	Job(int nid, int lid, std::shared_ptr<Packet> p, double d, JobType jt);
+	Job(int nid, int lid, std::shared_ptr<Packet> p, int d, JobType jt);
 	
 	int GetNodeId();
 	int GetLinkID();
@@ -32,4 +32,6 @@ public:
 	void SetPacket(std::shared_ptr<Packet> p);
 	void SetDelay(int d);
 	void SetJobType(JobType jt);
+	
+	void doJob();
 };
