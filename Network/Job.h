@@ -5,7 +5,8 @@ enum class JobType
 {
 	Processing,
 	PacketUpload,
-	PacketDownload
+	PacketDownload,
+	PacketCreation
 };
 
 class Job
@@ -14,7 +15,7 @@ private:
 	int nodeId;
 	int linkId;
 	std::shared_ptr<Packet> packet;
-	double delay;
+	int delay;
 	JobType job;
 public:
 	Job();
@@ -23,12 +24,12 @@ public:
 	int GetNodeId();
 	int GetLinkID();
 	std::shared_ptr<Packet> getPacket();
-	double GetDelay();
+	int GetDelay();
 	JobType GetType();
 	
 	void SetNodeId(int nid);
 	void SetLinkId(int lid);
 	void SetPacket(std::shared_ptr<Packet> p);
-	void SetDelay(double d);
+	void SetDelay(int d);
 	void SetJobType(JobType jt);
 };

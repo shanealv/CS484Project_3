@@ -38,3 +38,6 @@
 *.d
 *.config
 *.stackdump
+
+# Graph
+*.g
