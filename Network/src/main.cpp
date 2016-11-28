@@ -2,9 +2,11 @@
 #include "NetworkLink.h"
 #include "RandomGen.h"
 #include <array>
+#include <limits>
 #include <cstdbool>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -63,7 +65,64 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < numEdges; i++)
 		cout << edges[i] << endl;
-
+	
+	// floyd warshall
+	vector<vector<double>> dist(numNodes);
+	vector<vector<int>> next(numNodes);
+	for (int i = 0; i < numNodes; i++)
+	{
+		dist[i] = vector<double>(numNodes, numeric_limits<double>::infinity());
+		next[i] = vector<int>(numNodes, -1);
+	}
+	
+	for (int i = 0; i < numNodes; i++)
+		dist[i][i] = 0;
+	
+	for (int i = 0; i < numEdges; i++)
+	{
+		auto edge = edges[i];
+		int u = edge->GetNodeAId();
+		int v = edge->GetNodeBId();
+		dist[u][v] = 1;
+		dist[v][u] = 1;
+		next[u][v] = v;
+		next[v][u] = u;
+	}
+	for (int i = 0; i < numNodes; i++)
+	{
+		for (int j = 0; j < numNodes; j++)
+			cout << setw(4) << next[i][j] << " ";
+		cout << endl;
+	}
+	cout << endl;
+	
+	for (int k = 0; k < numNodes; k++)
+		for (int i = 0; i < numNodes; i++)
+			for (int j = 0; j < numNodes; j++)
+			{
+				double newDist = dist[i][k] + dist[k][j];
+				if (dist[i][j] > newDist)
+				{
+					dist[i][j] = newDist;
+					next[i][j] = next[i][k];
+				}
+			}
+	
+	for (int i = 0; i < numNodes; i++)
+	{
+		for (int j = 0; j < numNodes; j++)
+			cout << setw(4) << dist[i][j] << " ";
+		cout << endl;
+	}
+	
+	cout << endl;
+	
+	for (int i = 0; i < numNodes; i++)
+	{
+		for (int j = 0; j < numNodes; j++)
+			cout << setw(4) << next[i][j] << " ";
+		cout << endl;
+	}
 }
 
 void PrintHelp()

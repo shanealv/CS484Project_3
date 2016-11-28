@@ -144,11 +144,11 @@ ostream& operator<<(ostream& os, shared_ptr<NetworkLink>& link)
 	os << *link.get();
 }
 
-ostream& operator<<(ostream& os, const NetworkLink& link)
+ostream& operator<<(ostream& os, NetworkLink& link)
 {
 	os << "Link: " << link._id;
-	os << " A: " << link._nodeA.lock()->GetId();
-	os << " B: " << link._nodeB.lock()->GetId();
+	os << " A: " << link.GetNodeAId();
+	os << " B: " << link.GetNodeBId();
 	os << " Pkts: " << link._numPackets;
 	os << " Drop: " << link._droppedPackets;
 	os << " Delay: " << link._totalDelay;
@@ -159,4 +159,14 @@ ostream& operator<<(ostream& os, const NetworkLink& link)
 int NetworkLink::GetId()
 {
 	return _id;
+}
+
+int NetworkLink::GetNodeAId()
+{
+	return _nodeA.lock()->GetId();
+}
+
+int NetworkLink::GetNodeBId()
+{
+	return _nodeB.lock()->GetId();
 }

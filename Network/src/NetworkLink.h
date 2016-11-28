@@ -26,6 +26,10 @@ public:
 	NetworkLink(int id, std::shared_ptr<NetworkNode>& nodeA, std::shared_ptr<NetworkNode>& nodeB);
 	static const int QueueLimit = 30;
 	double GetBandwidth();
+	
+	int GetNodeAId();
+	int GetNodeBId();
+	
 	std::queue<std::shared_ptr<Packet>>& GetInputQueue(int sourceId);
 	std::queue<std::shared_ptr<Packet>>& GetOutputQueue(int destinationId);
 
@@ -38,7 +42,7 @@ public:
 	int GetDroppedPackets();
 	double GetTotalDelay();
 
-	friend std::ostream& operator<<(std::ostream& os, const NetworkLink& link);
+	friend std::ostream& operator<<(std::ostream& os, NetworkLink& link);
 
 	int GetId();
 };
