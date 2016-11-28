@@ -3,12 +3,12 @@
 using namespace std;
 
 int Dispatcher::CurrentTime = 0;
-priority_queue<Job, vector<Job>, DelayComparison> JobQueue();
+priority_queue<Job, vector<Job>, DelayComparison> Dispatcher::JobQueue;
 
 void Dispatcher::QueuePacketCreation(int nodeId, int destinationId)
 {
 	Job newJob(nodeId, destinationId, -1, NULL, CurrentTime, JobType::PacketCreation);
-	//Dispatcher::JobQueue.push(newJob);
+	Dispatcher::JobQueue.push(newJob);
 }
 
 void Dispatcher::QueuePacketProcessing(int nodeId, std::shared_ptr<Packet> packet, int delay)
