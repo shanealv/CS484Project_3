@@ -40,10 +40,18 @@ public:
 	void SetJobType(JobType jt);
 };
 
-struct DelayComparison : public std::binary_function<Job&, Job&, bool>
+//struct DelayComparison : public std::binary_function<Job&, Job&, bool>
+//{
+//    bool operator() (const Job &j1, const Job &j2) const
+//    {
+//        return j1.GetDelay() < j2.GetDelay();
+//    }
+//};
+
+struct DelayComparison: public std::binary_function<std::shared_ptr<Job>&, std::shared_ptr<Job>&, bool>
 {
-    bool operator() (const Job &j1, const Job &j2) const
+    bool operator() (const std::shared_ptr<Job> &j1, const std::shared_ptr<Job> &j2) const
     {
-        return j1.GetDelay() > j2.GetDelay();
+        return j1.get()->GetDelay() < j2.get()->GetDelay();
     }
 };
