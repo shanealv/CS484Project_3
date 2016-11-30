@@ -19,6 +19,12 @@ void PrintHelp();
 bool ReadLine(ifstream& source, int& valA, int& valB);
 bool ReadLine(ifstream& source, int& valA, long& valB);
 
+struct SourceDestPair
+{
+	int _src;
+	int _dest;
+};
+
 int main(int argc, char* argv[])
 {
 	char * filename;
@@ -123,6 +129,25 @@ int main(int argc, char* argv[])
 			cout << setw(4) << next[i][j] << " ";
 		cout << endl;
 	}
+	
+	//Designate source and destination pairs
+	vector<SourceDestPair*> pairs(20);
+	int srcid, destid;
+	SourceDestPair* sdtemp;
+	for(int i = 0; i < 20; i++)
+	{
+		sdtemp = (SourceDestPair*)malloc(sizeof(SourceDestPair));
+		do
+		{
+			srcid = rand() % numNodes;
+			destid = rand() % numNodes;
+		}while(srcid == destid);
+		sdtemp->_src = srcid;
+		sdtemp->_dest = destid;
+		pairs[i] = sdtemp;
+	}
+	
+	free(sdtemp);
 }
 
 void PrintHelp()
