@@ -37,3 +37,24 @@ int Dispatcher::GetCurrentTime()
 {
 	return Dispatcher::CurrentTime;
 }
+
+void Dispatcher::IncrementTime()
+{
+	Dispatcher::CurrentTime++;
+}
+
+vector<shared_ptr<Job>> Dispatcher::GetDueJobs()
+{
+	vector<shared_ptr<Job>> dueJobs;
+	shared_ptr<Job> tempPtr;
+	
+	tempPtr = Dispatcher::JobQueue.top();
+	
+	while(tempPtr->GetDelay() == Dispatcher::CurrentTime)
+	{
+		dueJobs.push_back(tempPtr);
+		Dispatcher::JobQueue.pop();
+	}
+	
+	return dueJobs;
+}

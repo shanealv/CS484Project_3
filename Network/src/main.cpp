@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "Job.h"
+#include "Dispatcher.h"
 
 using namespace std;
 
@@ -130,7 +131,7 @@ int main(int argc, char* argv[])
 		cout << endl;
 	}
 	
-	//Designate source and destination pairs
+	//Designate 20 source/destination pairs
 	vector<SourceDestPair*> pairs(20);
 	int srcid, destid;
 	SourceDestPair* sdtemp;
@@ -145,6 +146,24 @@ int main(int argc, char* argv[])
 		sdtemp->_src = srcid;
 		sdtemp->_dest = destid;
 		pairs[i] = sdtemp;
+	}
+	
+	//Simulate 1000 iterations of the network
+	Dispatcher dispatcher;
+	vector<shared_ptr<Job>> dueJobs;
+	for(int time = 0; time < 10000; time++)
+	{
+		//Queue future jobs
+		
+		//Do due jobs
+		dueJobs = dispatcher.GetDueJobs();
+		for(int i = 0; i < dueJobs.size(); i++)
+		{
+			//do job
+		}
+		
+		//Prepare for next iteration
+		dispatcher.IncrementTime();
 	}
 	
 	free(sdtemp);
