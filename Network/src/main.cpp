@@ -149,22 +149,25 @@ int main(int argc, char* argv[])
 	}
 	
 	//Simulate 1000 iterations of the network
-	Dispatcher dispatcher;
 	vector<shared_ptr<Job>> dueJobs;
 	for(int time = 0; time < 10000; time++)
 	{
 		//Queue future jobs
 		
+		
 		//Do due jobs
-		dueJobs = dispatcher.GetDueJobs();
+		dueJobs = Dispatcher::GetDueJobs();
 		for(int i = 0; i < dueJobs.size(); i++)
 		{
 			//do job
+			//gather statistics
 		}
 		
 		//Prepare for next iteration
-		dispatcher.IncrementTime();
+		Dispatcher::IncrementTime();
 	}
+	
+	//Print statistics
 	
 	free(sdtemp);
 }

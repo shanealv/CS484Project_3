@@ -48,6 +48,9 @@ vector<shared_ptr<Job>> Dispatcher::GetDueJobs()
 	vector<shared_ptr<Job>> dueJobs;
 	shared_ptr<Job> tempPtr;
 	
+	if(Dispatcher::JobQueue.empty())
+		return dueJobs;
+	
 	tempPtr = Dispatcher::JobQueue.top();
 	
 	while(tempPtr->GetDelay() == Dispatcher::CurrentTime)
