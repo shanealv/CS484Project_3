@@ -16,7 +16,7 @@ NetworkNode::NetworkNode(int id)
 	_id = id;
 }
 
-vector<weak_ptr<NetworkLink>> NetworkNode::GetLinks()
+std::vector<std::tuple<int, int, int>> NetworkNode::GetLinks()
 {
 	return _links;
 }

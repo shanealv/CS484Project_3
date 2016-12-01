@@ -54,9 +54,11 @@ int main(int argc, char* argv[])
 	vector<shared_ptr<NetworkNode>> nodes(numNodes); // shared_ptr owners
 	vector<shared_ptr<NetworkLink>> edges(numEdges); // shared_ptr owners
 
+	// create nodes
 	for (int i = 0; i < numNodes; i++)
 		nodes[i] = make_shared<NetworkNode>(i);
-
+	
+	// create edges
 	for (int i = 0; i < numEdges; i++)
 	{
 		int nodeA, nodeB;
@@ -64,9 +66,9 @@ int main(int argc, char* argv[])
 			return 1;
 		edges[i] = shared_ptr<NetworkLink>(new NetworkLink(i, nodes[nodeA], nodes[nodeB]));
 	}
-
-	for (int i = 0; i < numEdges; i++)
-		cout << edges[i] << endl;
+	
+	//for (int i = 0; i < numEdges; i++)
+	//	cout << edges[i] << endl;
 	
 	// floyd warshall
 	vector<vector<double>> dist(numNodes);
@@ -77,10 +79,10 @@ int main(int argc, char* argv[])
 		next[i] = vector<int>(numNodes, -1);
 	}
 	
-	for (int i = 0; i < numNodes; i++)
+	for (int i = 0; i < numNodes; i++) // distance to a node to itself is 0
 		dist[i][i] = 0;
 	
-	for (int i = 0; i < numEdges; i++)
+	for (int i = 0; i < numEdges; i++) // add each inter-node distance (1 for each)
 	{
 		auto edge = edges[i];
 		int u = edge->GetNodeAId();
@@ -89,15 +91,21 @@ int main(int argc, char* argv[])
 		dist[v][u] = 1;
 		next[u][v] = v;
 		next[v][u] = u;
+		
+		// also add edge to respective nodes
+		nodes[u]->AddLink(i, u, v);
+		nodes[v]->AddLink(i, u, v);
 	}
-	for (int i = 0; i < numNodes; i++)
-	{
-		for (int j = 0; j < numNodes; j++)
-			cout << setw(4) << next[i][j] << " ";
-		cout << endl;
-	}
-	cout << endl;
 	
+	//for (int i = 0; i < numNodes; i++) // print matrix of distances before floyd warshall
+	//{
+	//	for (int j = 0; j < numNodes; j++)
+	//		cout << setw(4) << next[i][j] << " ";
+	//	cout << endl;
+	//}
+	//cout << endl;
+	
+	// dynamic algorithm for calculating min distances and next nodes
 	for (int k = 0; k < numNodes; k++)
 		for (int i = 0; i < numNodes; i++)
 			for (int j = 0; j < numNodes; j++)
@@ -110,7 +118,7 @@ int main(int argc, char* argv[])
 				}
 			}
 	
-	for (int i = 0; i < numNodes; i++)
+	for (int i = 0; i < numNodes; i++) // print matrix of distances after floyd warshall
 	{
 		for (int j = 0; j < numNodes; j++)
 			cout << setw(4) << dist[i][j] << " ";
@@ -119,7 +127,7 @@ int main(int argc, char* argv[])
 	
 	cout << endl;
 	
-	for (int i = 0; i < numNodes; i++)
+	for (int i = 0; i < numNodes; i++) // print the next node for each src/dest pair
 	{
 		for (int j = 0; j < numNodes; j++)
 			cout << setw(4) << next[i][j] << " ";

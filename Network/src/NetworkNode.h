@@ -24,7 +24,7 @@ public:
 	NetworkNode(int id);
 
 	std::vector<std::tuple<int, int, int>>  GetLinks();
-	void AddLink(int a, int b);
+	void AddLink(int id, int a, int b);
 	void BuildTable(std::vector<std::vector<int>> shortestPathTable);
 
 	void RoutePacket(std::shared_ptr<Packet> & packet);

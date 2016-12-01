@@ -3,15 +3,14 @@ CC = g++
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
-CC_FLAGS := -std=c++0x -g -DDEBUG -MMD
-LD_FLAGS := -std=c++0x -g -DDEBUG -MMD
+CC_FLAGS := -std=c++0x -g -DDEBUG
 all: ./obj main.exe
 
 ./obj:
 	mkdir obj
 
 main.exe: $(OBJ_FILES)
-	$(CC) $(LD_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^
 
 obj/%.o: src/%.cpp
 	$(CC) $(CC_FLAGS) -c $^ -o $@

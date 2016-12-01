@@ -1,4 +1,5 @@
 #include "Statistics.h"
+#include <climits>
 
 using namespace std;
 
