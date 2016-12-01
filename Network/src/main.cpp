@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 	for(int i = 0; i < 20; i++)
 	{
 		sdtemp = (SourceDestPair*)malloc(sizeof(SourceDestPair));
-		do
+		do //assure source doesn't send to self
 		{
 			srcid = rand() % numNodes;
 			destid = rand() % numNodes;
@@ -146,25 +146,54 @@ int main(int argc, char* argv[])
 		sdtemp->_src = srcid;
 		sdtemp->_dest = destid;
 		pairs[i] = sdtemp;
+		//time 0 jobs: queue packet creation for each source
+		nodes[srcid]->CreateAndSendPacket(destid);
 	}
 	
 	//Simulate 1000 iterations of the network
 	vector<shared_ptr<Job>> dueJobs;
-	for(int time = 0; time < 10000; time++)
+	shared_ptr<Packet> tempPack;
+	for(int time = 1; time < 1000; time++)
 	{
-		//Queue future jobs
-		
-		
 		//Do due jobs
 		dueJobs = Dispatcher::GetDueJobs();
 		for(int i = 0; i < dueJobs.size(); i++)
 		{
 			//do job
-			//gather statistics
+			switch(dueJobs[i]->GetType())
+			{
+				case JobType::PacketCreation:
+					nodes[dueJobs[i]->GetNodeId()]->CreateAndSendPacket(dueJobs[i]->GetDestId());
+					break;
+				case JobType::PacketProcessing:
+					tempPack = dueJobs[i]->GetPacket();
+					nodes[dueJobs[i]->GetNodeId()]->RoutePacket(tempPack);
+					break;
+				case JobType::PacketUpload:
+					tempPack = dueJobs[i]->GetPacket();
+					edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(),
+						tempPack);
+					break;
+				case JobType::PacketDownload:
+					tempPack = dueJobs[i]->GetPacket();
+					edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetPacket()->GetDestination(),
+						tempPack);
+					break;
+				case JobType::None:
+					break;
+				default:
+					cout <<  "unrecognized job" << endl;
+					exit(1);
+			}
 		}
 		
 		//Prepare for next iteration
+		//propagate every ledge
+		for(int i = 0; i < numEdges; i++)
+			edges[i]->Propagate();
+		//Other cleanup
 		Dispatcher::IncrementTime();
+		tempPack = NULL;
 	}
 	
 	//Print statistics

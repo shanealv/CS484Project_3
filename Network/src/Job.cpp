@@ -32,12 +32,12 @@ int Job::GetDestId() const
 	return destId;
 }
 
-int Job::GetLinkID() const
+int Job::GetLinkId() const
 {
 	return linkId;
 }
 
-shared_ptr<Packet> Job::getPacket() const
+shared_ptr<Packet> Job::GetPacket() const
 {
 	return packet;
 }
