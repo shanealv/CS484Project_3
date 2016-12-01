@@ -28,7 +28,7 @@ public:
 	int GetNodeId() const;
 	int GetDestId() const;
 	int GetLinkId() const;
-	std::shared_ptr<Packet> GetPacket() const;
+	std::shared_ptr<Packet> GetPacket();
 	int GetDelay() const;
 	JobType GetType() const;
 	

@@ -37,7 +37,7 @@ int Job::GetLinkId() const
 	return linkId;
 }
 
-shared_ptr<Packet> Job::GetPacket() const
+shared_ptr<Packet> Job::GetPacket()
 {
 	return packet;
 }
