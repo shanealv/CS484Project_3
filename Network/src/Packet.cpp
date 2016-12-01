@@ -10,17 +10,23 @@ int Packet::GetNextId()
 	return Packet::NextId++;
 }
 
-Packet::Packet(int size, int destination)
+Packet::Packet(int size, int source, int destination)
 {
 	_id = Packet::GetNextId();
 	_size = size;
+	_source = source;
 	_destination = destination;
-	_creationTime = 0;//Dispatcher::GetCurrentTime();
+	_creationTime = Dispatcher::GetCurrentTime();
 }
 
 int Packet::GetSize()
 {
 	return _size;
+}
+
+int Packet::GetSource()
+{
+	return _source;
 }
 
 int Packet::GetDestination()
@@ -36,7 +42,7 @@ int Packet::GetCreationTime()
 void Packet::OnArrive()
 {
 	Packet::NumArrived++;
-	Packet::TotalDelay += 1;//Dispatcher::GetCurrentTime() - _creationTime;
+	Packet::TotalDelay = Dispatcher::GetCurrentTime() - _creationTime;
 }
 
 int Packet::GetTotalPackets()

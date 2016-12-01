@@ -8,13 +8,15 @@ private:
 	static int TotalDelay;
 	int _id;
 	int _size;
+	int _source;
 	int _destination;
 	int _creationTime;
 
 	int GetNextId();
 public:
-	Packet(int size, int destination);
+	Packet(int size, int source, int destination);
 	int GetSize();
+	int GetSource();
 	int GetDestination();
 	int GetCreationTime();
 	void OnArrive();

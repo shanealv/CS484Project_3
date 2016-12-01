@@ -1,7 +1,9 @@
+#include "Dispatcher.h"
 #include "NetworkLink.h"
 #include "NetworkNode.h"
 #include "Packet.h"
 #include "RandomGen.h"
+#include <cmath>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -38,7 +40,7 @@ queue<shared_ptr<Packet>>& NetworkLink::GetInputQueue(int sourceId)
 
 std::queue<std::shared_ptr<Packet>>& NetworkLink::GetOutputQueue(int destinationId)
 {
-	auto nodeA = _nodeA.lock();
+	auto nodeA = _nodeA.lock(); // comment
 	auto nodeB = _nodeB.lock();
 	if (nodeA->GetId() == destinationId)
 		return _outputQueueA;
@@ -53,10 +55,9 @@ void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	auto& queue = GetInputQueue(sourceId);
-	int size = queue.size();
-	if (size < NetworkLink::QueueLimit)
+	if (queue.size() < NetworkLink::QueueLimit)
 	{
-		queue.push(packet); // TODO queue action with dispatcher
+		queue.push(packet);
 		return;
 	}
 
@@ -75,7 +76,8 @@ void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& p
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
 	{
-		queue.push(packet); // TODO queue action with dispatcher
+		queue.push(packet);
+		return;
 	}
 
 	// drop packet
@@ -89,38 +91,40 @@ void NetworkLink::Propagate()
 {
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
-	// Input A -> Output B
+	// Input queue A to output queue B
 	if (!_inputQueueA.empty())
 	{
 		auto packet = _inputQueueA.front();
 		_inputQueueA.pop();
-		int propagationDelay = RandomGen::Uniform(1.0, 10.0);
-		_totalDelay += propagationDelay;
-		_numPackets++;
-		if (_outputQueueB.size() < NetworkLink::QueueLimit)
-			_outputQueueB.push(packet); // TODO queue action with dispatcher using delay
-		else
-		{
-			_droppedPackets++;
-			nodeB->DropPacket();
-		}
+		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
+		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
+		Dispatcher::QueuePacketDownload(_id, packet, (int) ceil(pDelay + tDelay));
 	}
 
-	// Input B -> Output A
+	// Input queue B to output queue A
 	if (!_inputQueueB.empty())
 	{
 		auto packet = _inputQueueB.front();
 		_inputQueueB.pop();
-		int propagationDelay = 4; RandomGen::Uniform(1.0, 10.0);
-		_totalDelay += propagationDelay;
-		_numPackets++;
-		if (_outputQueueA.size() < NetworkLink::QueueLimit)
-			_outputQueueA.push(packet); // TODO queue action with dispatcher using delay
-		else
-		{
-			_droppedPackets++;
-			nodeA->DropPacket();
-		}
+		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
+		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
+		Dispatcher::QueuePacketDownload(_id, packet, (int) ceil(pDelay + tDelay));
+	}
+	
+	// Output queue A to node A routing
+	if (!_outputQueueA.empty())
+	{
+		auto packet = _outputQueueA.front();
+		_outputQueueA.pop();
+		nodeA->RoutePacket(packet);
+	}
+	
+	// Output queue B to node B routing
+	if (!_outputQueueB.empty())
+	{
+		auto packet = _outputQueueB.front();
+		_outputQueueA.pop();
+		nodeB->RoutePacket(packet);
 	}
 }
 
@@ -142,6 +146,7 @@ double NetworkLink::GetTotalDelay()
 ostream& operator<<(ostream& os, shared_ptr<NetworkLink>& link)
 {
 	os << *link.get();
+	return os;
 }
 
 ostream& operator<<(ostream& os, NetworkLink& link)
@@ -153,6 +158,7 @@ ostream& operator<<(ostream& os, NetworkLink& link)
 	os << " Drop: " << link._droppedPackets;
 	os << " Delay: " << link._totalDelay;
 	os << " Bandw: " << link._bandwidth;
+	return os;
 }
 
 
