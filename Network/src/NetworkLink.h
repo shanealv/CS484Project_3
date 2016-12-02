@@ -33,8 +33,8 @@ public:
 	std::queue<std::shared_ptr<Packet>>& GetInputQueue(int sourceId);
 	std::queue<std::shared_ptr<Packet>>& GetOutputQueue(int destinationId);
 
-	void AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet);
-	void AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& packet);
+	void AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet);
+	void AddToOutputQueue(int destinationId, std::shared_ptr<Packet> packet);
 
 	void Propagate();
 

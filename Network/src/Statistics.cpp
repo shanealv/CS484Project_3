@@ -78,12 +78,12 @@ void Statistics::PrintAllStats(vector<shared_ptr<NetworkNode>> nodes)
 
 void Statistics::AddPair(int src, int dest)
 {
-	SourceDestPair* sdtemp;
+	auto sdtemp = new SourceDestPair();
 	
 	if(PairExists(src, dest))
 		return;
 	
-	sdtemp = (SourceDestPair*)malloc(sizeof(SourceDestPair));
+// 	sdtemp = (SourceDestPair*)malloc(sizeof(SourceDestPair));
 	sdtemp->_src = src;
 	sdtemp->_dest = dest;
 	sdtemp->_arrived = 0;
@@ -91,7 +91,6 @@ void Statistics::AddPair(int src, int dest)
 	sdtemp->_totalDelay = 0;
 
 	pairs.push_back(sdtemp);
-	free(sdtemp);
 }
 
 bool Statistics::PairExists(int src, int dest)

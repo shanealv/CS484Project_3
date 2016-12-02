@@ -7,6 +7,7 @@
 
 using namespace std;
 
+shared_ptr<Packet> emptyPacket;
 int Dispatcher::CurrentTime = 0;
 priority_queue<shared_ptr<Job>, vector<shared_ptr<Job>>, DelayComparison> Dispatcher::JobQueue;
 
@@ -14,8 +15,7 @@ void Dispatcher::QueuePacketCreation(int nodeId, int destinationId, int delay)
 {
 	int time = CurrentTime + delay;
 	cout << "[Dispatcher] Creating Packet " << nodeId << " to " << destinationId << " to execute at time " << time << endl;
-	auto emptyPacket = make_shared<Packet>(0, -1, -1);
-	auto job = make_shared<Job>(nodeId, destinationId, -1, emptyPacket, time, JobType::PacketCreation);
+	auto job = shared_ptr<Job>(new Job(nodeId, destinationId, -1, emptyPacket, time, JobType::PacketCreation));
 	Dispatcher::JobQueue.push(job);
 }
 
@@ -23,7 +23,7 @@ void Dispatcher::QueuePacketProcessing(int nodeId, shared_ptr<Packet> packet, in
 {
 	int time = CurrentTime + delay;
 	cout << "[Dispatcher] Processing Packet at node " << nodeId << " to execute at time " << time << endl;
-	auto job = make_shared<Job>(nodeId, -1, -1, packet, time, JobType::PacketProcessing);
+	auto job = shared_ptr<Job>(new Job(nodeId, -1, -1, packet, time, JobType::PacketProcessing));
 	Dispatcher::JobQueue.push(job);
 }
 
@@ -31,7 +31,7 @@ void Dispatcher::QueuePacketUpload(int nodeId, int linkId, shared_ptr<Packet> pa
 {
 	int time = CurrentTime + delay;
 	cout << "[Dispatcher] Uploading Packet to execute at time " << time << endl;
-	auto job = make_shared<Job>(nodeId, -1, linkId, packet, time, JobType::PacketUpload);
+	auto job = shared_ptr<Job>(new Job(nodeId, -1, linkId, packet, time, JobType::PacketUpload));
 	Dispatcher::JobQueue.push(job);
 }
 
@@ -39,7 +39,7 @@ void Dispatcher::QueuePacketDownload(int nodeId, int linkId, shared_ptr<Packet> 
 {
 	int time = CurrentTime + delay;
 	cout << "[Dispatcher] Downloading Packet to execute at time " << time << endl;
-	auto job = make_shared<Job>(nodeId, -1, linkId, packet, time, JobType::PacketDownload);
+	auto job = shared_ptr<Job>(new Job(nodeId, -1, linkId, packet, time, JobType::PacketDownload));
 	Dispatcher::JobQueue.push(job);
 }
 

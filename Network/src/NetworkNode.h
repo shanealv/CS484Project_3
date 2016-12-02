@@ -27,7 +27,7 @@ public:
 	void AddLink(int linkId, int dest);
 	void BuildTable(std::vector<std::vector<int>>& networkRoutingTable);
 
-	void RoutePacket(std::shared_ptr<Packet> & packet);
+	void RoutePacket(std::shared_ptr<Packet> packet);
 	void CreateAndSendPacket(int destination);
 
 	bool GetIsSourceOrDestination();

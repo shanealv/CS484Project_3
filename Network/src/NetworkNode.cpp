@@ -49,7 +49,7 @@ void NetworkNode::BuildTable(vector<vector<int>>& networkRoutingTable)
 	}
 }
 
-void NetworkNode::RoutePacket(shared_ptr<Packet>& packet)
+void NetworkNode::RoutePacket(shared_ptr<Packet> packet)
 {
 	// extract destination and check for arrival
 	int destination = packet->GetDestination();
@@ -75,6 +75,7 @@ void NetworkNode::CreateAndSendPacket(int destination)
 	// create and route the packet
 	int size = RandomGen::Uniform(0.1, 1);
 	auto packet = make_shared<Packet>(size, _id, destination);
+// 	auto packet = shared_ptr<Packet>(new Packet(size, _id, destination));
 	RoutePacket(packet);
 
 	// queue up next packet to be created

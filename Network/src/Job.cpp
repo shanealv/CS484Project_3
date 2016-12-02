@@ -5,17 +5,7 @@
 
 using namespace std;
 
-Job::Job()
-{
-	nodeId = -1;
-	destId = -1;
-	linkId = -1;
-	packet = NULL;
-	delay = -1;
-	type = JobType::None;
-}
-
-Job::Job(int nid, int did, int lid, std::shared_ptr<Packet>& p, int d, JobType jt)
+Job::Job(int nid, int did, int lid, std::shared_ptr<Packet> p, int d, JobType jt)
 {
 	nodeId = nid;
 	destId = did;

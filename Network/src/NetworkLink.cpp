@@ -50,8 +50,13 @@ std::queue<std::shared_ptr<Packet>>& NetworkLink::GetOutputQueue(int destination
 		throw invalid_argument("destinationId not found on this link");
 }
 
-void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
+void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet)
 {
+	if (packet.get() == NULL) 
+	{
+		cout << "[NetworkLink][" << _id << "] INPUT QUEUING : MISSING PACKET" << endl; 
+		return;
+	}
 	cout << "[NetworkLink][" << _id << "] INPUT Queuing Packet heading to " << packet->GetDestination() << endl;
 	if (_nodeA.expired() || _nodeB.expired()) { cout << "WEJRLKWEJRLEWJRWE" << endl; return; }
 	auto nodeA = _nodeA.lock();
@@ -70,8 +75,13 @@ void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet>& packet)
 		nodeB->DropPacket();
 }
 
-void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet>& packet)
+void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet> packet)
 {
+	if (packet.get() == NULL) 
+	{
+		cout << "[NetworkLink][" << _id << "] OUTPUT QUEUING : MISSING PACKET" << endl; 
+		return;
+	}
 	cout << "[NetworkLink][" << _id << "] OUTPUT Queuing Packet heading to " << packet->GetDestination() << endl;
 	if (_nodeA.expired() || _nodeB.expired()) { cout << "WEJRLKWEJRLEWJRWE" << endl; return; }
 	auto nodeA = _nodeA.lock();
@@ -123,6 +133,11 @@ void NetworkLink::Propagate()
 	if (!_outputQueueA.empty())
 	{
 		auto packet = _outputQueueA.front();
+		if (packet.get() == NULL) 
+		{
+			cout << "MISSING PACKET!" << endl;
+			return;
+		}
 		_outputQueueA.pop();
 		cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeA->RoutePacket(packet);
@@ -132,6 +147,11 @@ void NetworkLink::Propagate()
 	if (!_outputQueueB.empty())
 	{
 		auto packet = _outputQueueB.front();
+		if (packet.get() == NULL) 
+		{
+			cout << "MISSING PACKET!" << endl;
+			return;
+		}
 		_outputQueueA.pop();
 		cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeB->RoutePacket(packet);

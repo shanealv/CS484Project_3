@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 		{
 			srcid = rand() % numNodes;
 			destid = rand() % numNodes;
-		} while (srcid == destid && !Statistics::PairExists(srcid, destid));
+		} while (srcid == destid || Statistics::PairExists(srcid, destid));
 
 		Statistics::AddPair(srcid, destid);
 		//time 0 jobs: queue packet creation for each source
@@ -142,17 +142,14 @@ int main(int argc, char* argv[])
 	//Simulate 1000 iterations of the network
 	vector<shared_ptr<Job>> dueJobs;
 
-	for (int time = 1; time < 1000; time++)
+	for (int time = 1; time < 200; time++)
 	{
 		//Do due jobs
-		//cout << "[main] Getting Jobs" << endl;
 		dueJobs = Dispatcher::GetDueJobs();
-		//cout << "[main] Jobs: " << (!dueJobs.empty() ? "true" : "false")  << " " << dueJobs.size() << endl;
 		for (int i = 0; i < dueJobs.size(); i++)
 		{
 			cout << "[main][" << setw(4) << time << "] got job of type ";
 			//do job
-			shared_ptr<Packet> packet;
 			switch (dueJobs[i]->GetType())
 			{
 			case JobType::PacketCreation:
@@ -161,18 +158,15 @@ int main(int argc, char* argv[])
 				break;
 			case JobType::PacketProcessing:
 				cout << "Packet Processing" << endl;
-				packet = dueJobs[i]->GetPacket();
-				nodes[dueJobs[i]->GetNodeId()]->RoutePacket(packet);
+				nodes[dueJobs[i]->GetNodeId()]->RoutePacket(dueJobs[i]->GetPacket());
 				break;
 			case JobType::PacketUpload:
 				cout << "Packet Upload" << endl;
-				packet = dueJobs[i]->GetPacket();
-				edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(), packet);
+				edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(), dueJobs[i]->GetPacket());
 				break;
 			case JobType::PacketDownload:
 				cout << "Packet Download" << endl;
-				packet = dueJobs[i]->GetPacket();
-				edges[dueJobs[i]->GetLinkId()]->AddToOutputQueue(dueJobs[i]->GetNodeId(), packet);
+				edges[dueJobs[i]->GetLinkId()]->AddToOutputQueue(dueJobs[i]->GetNodeId(), dueJobs[i]->GetPacket());
 				break;
 			case JobType::None:
 				cout << "None" << endl;

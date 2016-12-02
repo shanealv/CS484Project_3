@@ -22,8 +22,8 @@ private:
 	int delay;
 	JobType type;
 public:
-	Job();
-	Job(int nid, int did, int lid, std::shared_ptr<Packet>& p, int d, JobType jt);
+	//Job();
+	Job(int nid, int did, int lid, std::shared_ptr<Packet> p, int d, JobType jt);
 
 	int GetNodeId();
 	int GetDestId();
@@ -48,10 +48,10 @@ public:
 //    }
 //};
 
-struct DelayComparison : public std::binary_function<std::shared_ptr<Job>&, std::shared_ptr<Job>&, bool>
+struct DelayComparison : public std::binary_function<std::shared_ptr<Job>, std::shared_ptr<Job>, bool>
 {
-	bool operator() (std::shared_ptr<Job>& j1, std::shared_ptr<Job>& j2)
+	bool operator() (const std::shared_ptr<Job> j1, const std::shared_ptr<Job> j2) const
 	{
-		return j1.get()->GetDelay() > j2.get()->GetDelay();
+		return j1->GetDelay() > j2->GetDelay();
 	}
 };
