@@ -1,4 +1,7 @@
 #include "Job.h"
+#include "Packet.h"
+#include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -12,7 +15,7 @@ Job::Job()
 	type = JobType::None;
 }
 
-Job::Job(int nid, int did, int lid, std::shared_ptr<Packet> p, int d, JobType jt)
+Job::Job(int nid, int did, int lid, std::shared_ptr<Packet>& p, int d, JobType jt)
 {
 	nodeId = nid;
 	destId = did;
@@ -22,17 +25,17 @@ Job::Job(int nid, int did, int lid, std::shared_ptr<Packet> p, int d, JobType jt
 	type = jt;
 }
 
-int Job::GetNodeId() const
+int Job::GetNodeId()
 {
 	return nodeId;
 }
 
-int Job::GetDestId() const
+int Job::GetDestId()
 {
 	return destId;
 }
 
-int Job::GetLinkId() const
+int Job::GetLinkId()
 {
 	return linkId;
 }
@@ -42,12 +45,12 @@ shared_ptr<Packet> Job::GetPacket()
 	return packet;
 }
 
-int Job::GetDelay() const
+int Job::GetDelay()
 {
 	return delay;
 }
 
-JobType Job::GetType() const
+JobType Job::GetType()
 {
 	return type;
 }
@@ -67,7 +70,7 @@ void Job::SetLinkId(int lid)
 	linkId = lid;
 }
 
-void Job::SetPacket(shared_ptr<Packet> p)
+void Job::SetPacket(shared_ptr<Packet>& p)
 {
 	packet = p;
 }

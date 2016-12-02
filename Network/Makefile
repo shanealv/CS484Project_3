@@ -3,7 +3,7 @@ CC = g++
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
-CC_FLAGS := -std=c++0x -g -DDEBUG
+CC_FLAGS := -std=c++0x -g -DDEBUG -rdynamic
 all: ./obj main.exe
 
 ./obj:
@@ -22,3 +22,7 @@ rebuild: clean all
 
 test: all
 	./main.exe testGraph.txt 0
+
+
+run: all
+	./main.exe graph.g 123412341234

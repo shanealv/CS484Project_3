@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
 	if (ReadLine(source, numNodes, numEdges) == false) // read the first line
 		return 1;
 
+	cout << "Nodes: " << numNodes << " Edges: " << numEdges << endl;
+
 	// these vectors always hold shared references to all the nodes and edges
 	vector<shared_ptr<NetworkNode>> nodes(numNodes);
 	vector<shared_ptr<NetworkLink>> edges(numEdges);
@@ -58,7 +60,7 @@ int main(int argc, char* argv[])
 	// create nodes
 	for (int i = 0; i < numNodes; i++)
 		nodes[i] = make_shared<NetworkNode>(i);
-	
+
 	// create edges
 	for (int i = 0; i < numEdges; i++)
 	{
@@ -69,7 +71,7 @@ int main(int argc, char* argv[])
 	}
 
 	cout << "Created Graph" << endl;
-	
+
 	// floyd warshall algorithm for all shortests paths
 	vector<vector<double>> dist(numNodes); // distance matrix
 	vector<vector<int>> next(numNodes); // forwarding matrix
@@ -78,11 +80,11 @@ int main(int argc, char* argv[])
 		dist[i] = vector<double>(numNodes, numeric_limits<double>::infinity());
 		next[i] = vector<int>(numNodes, -1);
 	}
-	
+
 	// distance from node to itself is 0
 	for (int i = 0; i < numNodes; i++)
 		dist[i][i] = 0;
-	
+
 	// add all the edges
 	for (int i = 0; i < numEdges; i++)
 	{
@@ -93,12 +95,12 @@ int main(int argc, char* argv[])
 		dist[v][u] = 1;
 		next[u][v] = v;
 		next[v][u] = u;
-		
+
 		// also add edge to respective nodes
 		nodes[u]->AddLink(i, v);
 		nodes[v]->AddLink(i, u);
 	}
-	
+
 	// dynamic algorithm for calculating min distances and next nodes
 	for (int k = 0; k < numNodes; k++)
 		for (int i = 0; i < numNodes; i++)
@@ -111,23 +113,23 @@ int main(int argc, char* argv[])
 					next[i][j] = next[i][k];
 				}
 			}
-	
+
 	// create the routing tables for each node
 	for (int i = 0; i < numNodes; i++)
 		nodes[i]->BuildTable(next);
 
 	cout << "Created Routing Tables" << endl;
-	
+
 	//Designate 20 source/destination pairs
 	int srcid, destid;
-	for(int i = 0; i < 20; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		do //assure source doesn't send to self and pair doesn't exist
 		{
 			srcid = rand() % numNodes;
 			destid = rand() % numNodes;
-		}while(srcid == destid && !Statistics::PairExists(srcid,destid));
-		
+		} while (srcid == destid && !Statistics::PairExists(srcid, destid));
+
 		Statistics::AddPair(srcid, destid);
 		//time 0 jobs: queue packet creation for each source
 		nodes[srcid]->CreateAndSendPacket(destid);
@@ -135,59 +137,62 @@ int main(int argc, char* argv[])
 	//time 0 completed: each source node has sent a packet
 	Dispatcher::IncrementTime();
 
-	cout << "Created First Packets" << endl;
+	cout << endl << endl << "Created First Packets" << endl << endl << endl;
 
 	//Simulate 1000 iterations of the network
 	vector<shared_ptr<Job>> dueJobs;
-	shared_ptr<Packet> tempPack;
-	
-	for(int time = 1; time < 1000; time++)
+
+	for (int time = 1; time < 1000; time++)
 	{
 		//Do due jobs
-		cout << "Getting Jobs" << endl;
+		//cout << "[main] Getting Jobs" << endl;
 		dueJobs = Dispatcher::GetDueJobs();
-		cout << "Jobs: " << (dueJobs.empty() ? "true" : "false")  << " " << dueJobs.size() << endl;
-		for(int i = 0; i < dueJobs.size(); i++)
+		//cout << "[main] Jobs: " << (!dueJobs.empty() ? "true" : "false")  << " " << dueJobs.size() << endl;
+		for (int i = 0; i < dueJobs.size(); i++)
 		{
-			cout << "got job" << endl;
+			cout << "[main][" << setw(4) << time << "] got job of type ";
 			//do job
-			switch(dueJobs[i]->GetType())
+			shared_ptr<Packet> packet;
+			switch (dueJobs[i]->GetType())
 			{
-				case JobType::PacketCreation:
-					nodes[dueJobs[i]->GetNodeId()]->CreateAndSendPacket(dueJobs[i]->GetDestId());
-					break;
-				case JobType::PacketProcessing:
-					tempPack = dueJobs[i]->GetPacket();
-					nodes[dueJobs[i]->GetNodeId()]->RoutePacket(tempPack);
-					break;
-				case JobType::PacketUpload:
-					tempPack = dueJobs[i]->GetPacket();
-					edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(),
-						tempPack);
-					break;
-				case JobType::PacketDownload:
-					tempPack = dueJobs[i]->GetPacket();
-					edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetPacket()->GetDestination(),
-						tempPack);
-					break;
-				case JobType::None:
-					break;
-				default:
-					cout <<  "unrecognized job" << endl;
-					exit(1);
+			case JobType::PacketCreation:
+				cout << "Packet Creation" << endl;
+				nodes[dueJobs[i]->GetNodeId()]->CreateAndSendPacket(dueJobs[i]->GetDestId());
+				break;
+			case JobType::PacketProcessing:
+				cout << "Packet Processing" << endl;
+				packet = dueJobs[i]->GetPacket();
+				nodes[dueJobs[i]->GetNodeId()]->RoutePacket(packet);
+				break;
+			case JobType::PacketUpload:
+				cout << "Packet Upload" << endl;
+				packet = dueJobs[i]->GetPacket();
+				edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(), packet);
+				break;
+			case JobType::PacketDownload:
+				cout << "Packet Download" << endl;
+				packet = dueJobs[i]->GetPacket();
+				edges[dueJobs[i]->GetLinkId()]->AddToOutputQueue(dueJobs[i]->GetNodeId(), packet);
+				break;
+			case JobType::None:
+				cout << "None" << endl;
+				break;
+			default:
+				cout << "unrecognized job" << endl;
+				//exit(1);
 			}
 		}
-		
+
 		//Prepare for next iteration
 		//propagate every edge
-		for(int i = 0; i < numEdges; i++)
+		cout << "[main][" << setw(4) << time << "] Propagating " << endl << endl;
+		for (int i = 0; i < numEdges; i++)
 			edges[i]->Propagate();
 		//Other cleanup
 		Dispatcher::IncrementTime();
-		tempPack = NULL;
-		cout << "time: " << time << endl;
+		cout << endl << endl;
 	}
-	
+
 	//Print statistics
 	Statistics::PrintAllStats(nodes);
 }

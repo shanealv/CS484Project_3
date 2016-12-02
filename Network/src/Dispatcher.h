@@ -13,7 +13,7 @@ public:
 	static void QueuePacketCreation(int nodeId, int destinationId, int delay);
 	static void QueuePacketProcessing(int nodeId, std::shared_ptr<Packet> packet, int delay);
 	static void QueuePacketUpload(int nodeId, int linkId, std::shared_ptr<Packet> packet, int delay);
-	static void QueuePacketDownload(int linkId, std::shared_ptr<Packet> packet, int delay);
+	static void QueuePacketDownload(int nodeId, int linkId, std::shared_ptr<Packet> packet, int delay);
 	static int GetCurrentTime();
 	static void IncrementTime();
 	static std::vector<std::shared_ptr<Job>> GetDueJobs();

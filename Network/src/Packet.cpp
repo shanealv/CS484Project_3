@@ -1,6 +1,9 @@
 #include "Packet.h"
 #include "Dispatcher.h"
 #include "Statistics.h"
+#include <iostream>
+
+using namespace std;
 
 int Packet::NextId = 0;
 int Packet::NumArrived = 0;
@@ -42,6 +45,7 @@ int Packet::GetCreationTime()
 
 void Packet::OnArrive()
 {
+	cout << "[Packet] Arrived at Destination from " << _source << " to " << _destination << endl;
 	int delay = Dispatcher::GetCurrentTime() - _creationTime;
 	Packet::NumArrived++;
 	Packet::TotalDelay += delay;

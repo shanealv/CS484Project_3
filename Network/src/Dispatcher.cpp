@@ -1,36 +1,46 @@
 #include "Dispatcher.h"
+#include "Job.h"
+#include <iostream>
+#include <memory>
+#include <queue>
+#include <vector>
 
 using namespace std;
 
 int Dispatcher::CurrentTime = 0;
-priority_queue<Job, vector<shared_ptr<Job>>, DelayComparison> Dispatcher::JobQueue;
+priority_queue<shared_ptr<Job>, vector<shared_ptr<Job>>, DelayComparison> Dispatcher::JobQueue;
 
 void Dispatcher::QueuePacketCreation(int nodeId, int destinationId, int delay)
 {
-	Job newJob(nodeId, destinationId, -1, NULL, CurrentTime + delay, JobType::PacketCreation);
-	shared_ptr<Job> ptr = make_shared<Job>(newJob);
-	Dispatcher::JobQueue.push(ptr);
+	int time = CurrentTime + delay;
+	cout << "[Dispatcher] Creating Packet " << nodeId << " to " << destinationId << " to execute at time " << time << endl;
+	auto emptyPacket = make_shared<Packet>(0, -1, -1);
+	auto job = make_shared<Job>(nodeId, destinationId, -1, emptyPacket, time, JobType::PacketCreation);
+	Dispatcher::JobQueue.push(job);
 }
 
-void Dispatcher::QueuePacketProcessing(int nodeId, std::shared_ptr<Packet> packet, int delay)
+void Dispatcher::QueuePacketProcessing(int nodeId, shared_ptr<Packet> packet, int delay)
 {
-	Job newJob(nodeId, -1, -1, packet, CurrentTime + delay, JobType::PacketProcessing);
-	shared_ptr<Job> ptr = make_shared<Job>(newJob);
-	Dispatcher::JobQueue.push(ptr);
+	int time = CurrentTime + delay;
+	cout << "[Dispatcher] Processing Packet at node " << nodeId << " to execute at time " << time << endl;
+	auto job = make_shared<Job>(nodeId, -1, -1, packet, time, JobType::PacketProcessing);
+	Dispatcher::JobQueue.push(job);
 }
 
-void Dispatcher::QueuePacketUpload(int nodeId, int linkId, std::shared_ptr<Packet> packet, int delay)
+void Dispatcher::QueuePacketUpload(int nodeId, int linkId, shared_ptr<Packet> packet, int delay)
 {
-	Job newJob(nodeId, -1, linkId, packet, CurrentTime + delay, JobType::PacketUpload);
-	shared_ptr<Job> ptr = make_shared<Job>(newJob);
-	Dispatcher::JobQueue.push(ptr);
+	int time = CurrentTime + delay;
+	cout << "[Dispatcher] Uploading Packet to execute at time " << time << endl;
+	auto job = make_shared<Job>(nodeId, -1, linkId, packet, time, JobType::PacketUpload);
+	Dispatcher::JobQueue.push(job);
 }
 
-void Dispatcher::QueuePacketDownload(int linkId, std::shared_ptr<Packet> packet, int delay)
+void Dispatcher::QueuePacketDownload(int nodeId, int linkId, shared_ptr<Packet> packet, int delay)
 {
-	Job newJob(-1, -1, linkId, packet, CurrentTime + delay, JobType::PacketDownload);
-	shared_ptr<Job> ptr = make_shared<Job>(newJob);
-	Dispatcher::JobQueue.push(ptr);
+	int time = CurrentTime + delay;
+	cout << "[Dispatcher] Downloading Packet to execute at time " << time << endl;
+	auto job = make_shared<Job>(nodeId, -1, linkId, packet, time, JobType::PacketDownload);
+	Dispatcher::JobQueue.push(job);
 }
 
 int Dispatcher::GetCurrentTime()
@@ -45,19 +55,20 @@ void Dispatcher::IncrementTime()
 
 vector<shared_ptr<Job>> Dispatcher::GetDueJobs()
 {
-	vector<shared_ptr<Job>> dueJobs;
-	shared_ptr<Job> tempPtr;
+	//cout << "GetDueJobs " << JobQueue.size() << endl;
+	vector<shared_ptr<Job>> jobs;
+	if (Dispatcher::JobQueue.empty())
+		return jobs;
 	
-	if(Dispatcher::JobQueue.empty())
-		return dueJobs;
-	
-	tempPtr = Dispatcher::JobQueue.top();
-	
-	while(tempPtr->GetDelay() == Dispatcher::CurrentTime)
+	auto job = Dispatcher::JobQueue.top();
+
+	while (job->GetDelay() == Dispatcher::CurrentTime)
 	{
-		dueJobs.push_back(tempPtr);
-		Dispatcher::JobQueue.pop();
+		//cout << "found Job" << endl;
+		jobs.push_back(job);
+		Dispatcher::JobQueue.pop(); 
+		job = Dispatcher::JobQueue.top();
 	}
-	
-	return dueJobs;
+
+	return jobs;
 }
