@@ -26,8 +26,8 @@ public:
 	static void RegisterArrival(int src, int dest, int delay);
 	static void PrintAveDelay();
 	static void PrintLossRate();
-	static void PrintMinMaxDropped(std::vector<std::shared_ptr<NetworkNode>> nodes);
-	static void PrintAllStats(std::vector<std::shared_ptr<NetworkNode>> nodes);
+	static void PrintMinMaxDropped(std::vector<std::shared_ptr<NetworkNode>>& nodes);
+	static void PrintAllStats(std::vector<std::shared_ptr<NetworkNode>>& nodes);
 	static void AddPair(int src, int dest);
 	static bool PairExists(int src, int dest);
 };
