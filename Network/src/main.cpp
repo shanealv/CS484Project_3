@@ -1,9 +1,13 @@
 #include "NetworkNode.h"
 #include "NetworkLink.h"
 #include "RandomGen.h"
+#include "Dispatcher.h"
+#include "Job.h"
+#include "Statistics.h"
 #include <array>
 #include <limits>
 #include <cstdbool>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -11,9 +15,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "Job.h"
-#include "Dispatcher.h"
-#include "Statistics.h"
 
 using namespace std;
 
@@ -40,19 +41,19 @@ int main(int argc, char* argv[])
 		cout << "Invalid Seed" << endl;
 		return 0;
 	}
-	RandomGen::Init(seed);
+	RandomGen::Init(seed); // initialize the random number generator
 
 	cout << filename << " " << seed << endl;
 
 	ifstream source(filename);
-	int numNodes;
-	int numEdges;
+	int numNodes, numEdges;
 
-	if (ReadLine(source, numNodes, numEdges) == false)
+	if (ReadLine(source, numNodes, numEdges) == false) // read the first line
 		return 1;
 
-	vector<shared_ptr<NetworkNode>> nodes(numNodes); // shared_ptr owners
-	vector<shared_ptr<NetworkLink>> edges(numEdges); // shared_ptr owners
+	// these vectors always hold shared references to all the nodes and edges
+	vector<shared_ptr<NetworkNode>> nodes(numNodes);
+	vector<shared_ptr<NetworkLink>> edges(numEdges);
 
 	// create nodes
 	for (int i = 0; i < numNodes; i++)
@@ -66,23 +67,24 @@ int main(int argc, char* argv[])
 			return 1;
 		edges[i] = shared_ptr<NetworkLink>(new NetworkLink(i, nodes[nodeA], nodes[nodeB]));
 	}
+
+	cout << "Created Graph" << endl;
 	
-	//for (int i = 0; i < numEdges; i++)
-	//	cout << edges[i] << endl;
-	
-	// floyd warshall
-	vector<vector<double>> dist(numNodes);
-	vector<vector<int>> next(numNodes);
+	// floyd warshall algorithm for all shortests paths
+	vector<vector<double>> dist(numNodes); // distance matrix
+	vector<vector<int>> next(numNodes); // forwarding matrix
 	for (int i = 0; i < numNodes; i++)
 	{
 		dist[i] = vector<double>(numNodes, numeric_limits<double>::infinity());
 		next[i] = vector<int>(numNodes, -1);
 	}
 	
-	for (int i = 0; i < numNodes; i++) // distance to a node to itself is 0
+	// distance from node to itself is 0
+	for (int i = 0; i < numNodes; i++)
 		dist[i][i] = 0;
 	
-	for (int i = 0; i < numEdges; i++) // add each inter-node distance (1 for each)
+	// add all the edges
+	for (int i = 0; i < numEdges; i++)
 	{
 		auto edge = edges[i];
 		int u = edge->GetNodeAId();
@@ -93,17 +95,9 @@ int main(int argc, char* argv[])
 		next[v][u] = u;
 		
 		// also add edge to respective nodes
-		nodes[u]->AddLink(i, u, v);
-		nodes[v]->AddLink(i, u, v);
+		nodes[u]->AddLink(i, v);
+		nodes[v]->AddLink(i, u);
 	}
-	
-	//for (int i = 0; i < numNodes; i++) // print matrix of distances before floyd warshall
-	//{
-	//	for (int j = 0; j < numNodes; j++)
-	//		cout << setw(4) << next[i][j] << " ";
-	//	cout << endl;
-	//}
-	//cout << endl;
 	
 	// dynamic algorithm for calculating min distances and next nodes
 	for (int k = 0; k < numNodes; k++)
@@ -118,21 +112,11 @@ int main(int argc, char* argv[])
 				}
 			}
 	
-	for (int i = 0; i < numNodes; i++) // print matrix of distances after floyd warshall
-	{
-		for (int j = 0; j < numNodes; j++)
-			cout << setw(4) << dist[i][j] << " ";
-		cout << endl;
-	}
-	
-	cout << endl;
-	
-	for (int i = 0; i < numNodes; i++) // print the next node for each src/dest pair
-	{
-		for (int j = 0; j < numNodes; j++)
-			cout << setw(4) << next[i][j] << " ";
-		cout << endl;
-	}
+	// create the routing tables for each node
+	for (int i = 0; i < numNodes; i++)
+		nodes[i]->BuildTable(next);
+
+	cout << "Created Routing Tables" << endl;
 	
 	//Designate 20 source/destination pairs
 	int srcid, destid;
@@ -150,7 +134,9 @@ int main(int argc, char* argv[])
 	}
 	//time 0 completed: each source node has sent a packet
 	Dispatcher::IncrementTime();
-	
+
+	cout << "Created First Packets" << endl;
+
 	//Simulate 1000 iterations of the network
 	vector<shared_ptr<Job>> dueJobs;
 	shared_ptr<Packet> tempPack;
@@ -158,9 +144,12 @@ int main(int argc, char* argv[])
 	for(int time = 1; time < 1000; time++)
 	{
 		//Do due jobs
+		cout << "Getting Jobs" << endl;
 		dueJobs = Dispatcher::GetDueJobs();
+		cout << "Jobs: " << (dueJobs.empty() ? "true" : "false")  << " " << dueJobs.size() << endl;
 		for(int i = 0; i < dueJobs.size(); i++)
 		{
+			cout << "got job" << endl;
 			//do job
 			switch(dueJobs[i]->GetType())
 			{
@@ -190,12 +179,13 @@ int main(int argc, char* argv[])
 		}
 		
 		//Prepare for next iteration
-		//propagate every ledge
+		//propagate every edge
 		for(int i = 0; i < numEdges; i++)
 			edges[i]->Propagate();
 		//Other cleanup
 		Dispatcher::IncrementTime();
 		tempPack = NULL;
+		cout << "time: " << time << endl;
 	}
 	
 	//Print statistics

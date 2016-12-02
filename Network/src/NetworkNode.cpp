@@ -3,6 +3,7 @@
 #include "Packet.h"
 #include "RandomGen.h"
 #include "Dispatcher.h"
+#include "Statistics.h"
 #include <cstdbool>
 #include <cmath>
 #include <iostream>
@@ -16,63 +17,69 @@ NetworkNode::NetworkNode(int id)
 	_id = id;
 }
 
-std::vector<std::tuple<int, int, int>> NetworkNode::GetLinks()
+std::vector<std::tuple<int, int>> NetworkNode::GetLinks()
 {
 	return _links;
 }
 
-void NetworkNode::AddLink(int id, int a, int b)
+void NetworkNode::AddLink(int linkId, int dest)
 {
-	_links.push_back(tuple<int, int, int>(id, a, b));
+	_links.push_back(tuple<int, int>(linkId, dest));
 }
 
-void NetworkNode::BuildTable(vector<vector<int>> shortestPathTable)
+void NetworkNode::BuildTable(vector<vector<int>>& networkRoutingTable)
 {
-	for (int i = 0; i < 150; i++)
+	// initialize table 
+	int numEntries = networkRoutingTable.size();
+	_routingTable = vector<int>(numEntries, -1);
+
+	// networkRoutingTable should denote to next node to 
+	//   forward a packet to to reach a destination
+	for (int i = 0; i < numEntries; i++)
 	{
-		int next = shortestPathTable[_id][i];
+		// find the link that connects to the next node
+		int next = networkRoutingTable[_id][i];
 		for (auto link : _links)
 		{
-			int id, a, b;
-			tie(id, a, b) = link;
-			if (id == next)
-				_routingTable[i] = id;
+			int linkId, dest;
+			tie(linkId, dest) = link;
+			if (next == dest)
+				_routingTable[i] = linkId;
 		}
 	}
 }
 
-void NetworkNode::RoutePacket(shared_ptr<Packet> & packet)
+void NetworkNode::RoutePacket(shared_ptr<Packet>& packet)
 {
+	// extract destination and check for arrival
 	int destination = packet->GetDestination();
-	double processingDelay = RandomGen::Exponential(1.0);
 	if (destination == _id)
 	{
 		packet->OnArrive();
 		return;
 	}
 
-	// determine which link to use
+	// determine the next link to forward the packet
 	int linkIdx = _routingTable[destination];
-	
+
 	// queue up the packet to load into the input queue
-	Dispatcher::QueuePacketUpload(_id, linkIdx, packet, (int) ceil(processingDelay));
+	double processingDelay = RandomGen::Exponential(1.0);
+	Dispatcher::QueuePacketUpload(_id, linkIdx, packet, (int)ceil(processingDelay));
 }
 
 void NetworkNode::CreateAndSendPacket(int destination)
 {
+	// create and route the packet
 	int size = RandomGen::Uniform(0.1, 1);
-	auto packet = shared_ptr<Packet>(new Packet(size, _id, destination));
+	auto packet = make_shared<Packet>(size, _id, destination);
+	RoutePacket(packet);
 
-	// determine which link to use
-	int linkIdx = _routingTable[destination];
-	
-	// queue up the packet to load into the input queue
-	double processingDelay = RandomGen::Exponential(1.0);
-	Dispatcher::QueuePacketUpload(_id, linkIdx, packet, (int) ceil(processingDelay));
-	
 	// queue up next packet to be created
 	double creationDelay = RandomGen::Exponential(0.5);
-	Dispatcher::QueuePacketCreation(_id, destination, (int) ceil(creationDelay)); 
+	Dispatcher::QueuePacketCreation(_id, destination, (int)ceil(creationDelay));
+
+	// register the creation of the packet
+	Statistics::RegisterCreation(_id, destination);
 }
 
 bool NetworkNode::GetIsSourceOrDestination()

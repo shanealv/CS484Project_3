@@ -18,14 +18,14 @@ private:
 	bool _isSourceOrDestination;
 	int _droppedPackets = 0;
 	int _totalDelay = 0;
-	std::array<int, 150> _routingTable;  // change to access global table
-	std::vector<std::tuple<int, int, int>> _links; // does not own pointer, but can reasonable expect them to exist
+	std::vector<int> _routingTable;  // maps destinations to the indexes of the _links vector 
+	std::vector<std::tuple<int, int>> _links; // link information, contains linkId destination pairs
 public:
 	NetworkNode(int id);
 
-	std::vector<std::tuple<int, int, int>>  GetLinks();
-	void AddLink(int id, int a, int b);
-	void BuildTable(std::vector<std::vector<int>> shortestPathTable);
+	std::vector<std::tuple<int, int>>  GetLinks();
+	void AddLink(int linkId, int dest);
+	void BuildTable(std::vector<std::vector<int>>& networkRoutingTable);
 
 	void RoutePacket(std::shared_ptr<Packet> & packet);
 	void CreateAndSendPacket(int destination);
