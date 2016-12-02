@@ -152,7 +152,7 @@ void NetworkLink::Propagate()
 			cout << "MISSING PACKET!" << endl;
 			return;
 		}
-		_outputQueueA.pop();
+		_outputQueueB.pop();
 		cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeB->RoutePacket(packet);
 	}
