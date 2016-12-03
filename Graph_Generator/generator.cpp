@@ -67,7 +67,7 @@ struct Graph* createGraph()
 		n = (struct Node*)malloc(sizeof(struct Node));
 		n->visited = 0;
 		n->id = i;
-		numNeighbors = rand() % (NUM_NODES) + 1;	//between 1 and NUM_NODES - 1 neighbors
+		numNeighbors = rand() % (NUM_NODES - 1) + 1;	//between 1 and NUM_NODES - 1 neighbors
 		n->neighbors = new list<int>[numNeighbors]();
 		
 		//Assign edges at random
@@ -180,7 +180,7 @@ void printGraph(struct Graph* g)
 		}
 	
 	
-	output.open ("graph.g");
+	output.open("graph.g");
 	
 	output << NUM_NODES << " " << edges.size() << "\n";
 	

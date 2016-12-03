@@ -5,21 +5,21 @@ OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
 CC_FLAGS := -std=c++0x -g -DDEBUG -MMD
 LD_FLAGS := -std=c++0x -g -DDEBUG -MMD
-all: ./obj main.exe
+all: ./obj generator
 
 ./obj:
 	mkdir obj
 
-main.exe: $(OBJ_FILES)
+generator: $(OBJ_FILES)
 	$(CC) $(LD_FLAGS) -o $@ $^
 
 obj/%.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $^ -o $@
 
 clean:
-	rm -f -r obj main.exe graph.g
+	rm -f -r obj generator graph.g
 
 rebuild: clean all
 
-test: all
-	./main.exe testGraph.txt 0
+run: all
+	./generator
