@@ -52,22 +52,18 @@ std::queue<std::shared_ptr<Packet>>& NetworkLink::GetOutputQueue(int destination
 
 void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet)
 {
-	if (packet.get() == NULL) 
-	{
-		cout << "[NetworkLink][" << _id << "] INPUT QUEUING : MISSING PACKET" << endl; 
-		return;
-	}
-	cout << "[NetworkLink][" << _id << "] INPUT Queuing Packet heading to " << packet->GetDestination() << endl;
-	if (_nodeA.expired() || _nodeB.expired()) { cout << "WEJRLKWEJRLEWJRWE" << endl; return; }
+	//cout << "[NetworkLink][" << _id << "] INPUT Queuing Packet heading to " << packet->GetDestination() << endl;
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	auto& queue = GetInputQueue(sourceId);
-	if (queue.size() < NetworkLink::QueueLimit)
+	int size = queue.size();
+	if (size < NetworkLink::QueueLimit)
 	{
+		cout << "KEPT " << size << " / " << NetworkLink::QueueLimit << endl;
 		queue.push(packet);
 		return;
 	}
-
+	cout << "DROPPED" << endl;
 	// drop packet
 	if (nodeA->GetId() == sourceId)
 		nodeA->DropPacket();
@@ -77,23 +73,19 @@ void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet)
 
 void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet> packet)
 {
-	if (packet.get() == NULL) 
-	{
-		cout << "[NetworkLink][" << _id << "] OUTPUT QUEUING : MISSING PACKET" << endl; 
-		return;
-	}
-	cout << "[NetworkLink][" << _id << "] OUTPUT Queuing Packet heading to " << packet->GetDestination() << endl;
-	if (_nodeA.expired() || _nodeB.expired()) { cout << "WEJRLKWEJRLEWJRWE" << endl; return; }
+	//cout << "[NetworkLink][" << _id << "] OUTPUT Queuing Packet heading to " << packet->GetDestination() << endl;
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	auto& queue = GetOutputQueue(destinationId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
-	{
+	{	
+		cout << "KEPT " << size << " / " << NetworkLink::QueueLimit << endl;
 		queue.push(packet);
 		return;
 	}
 
+	cout << "DROPPED" << endl;
 	// drop packet
 	if (nodeA->GetId() == destinationId)
 		nodeA->DropPacket();
@@ -103,8 +95,6 @@ void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet> pa
 
 void NetworkLink::Propagate()
 {
-	if (_nodeA.expired() || _nodeB.expired()) { cout << "WEJRLKWEJRLEWJRWE" << endl; return; }
-
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	// Input queue A to output queue B
@@ -112,7 +102,7 @@ void NetworkLink::Propagate()
 	{
 		auto packet = _inputQueueA.front();
 		_inputQueueA.pop();
-		cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+		//cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
 		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
 		Dispatcher::QueuePacketDownload(nodeB->GetId(), _id, packet, (int)ceil(pDelay + tDelay));
@@ -123,7 +113,7 @@ void NetworkLink::Propagate()
 	{
 		auto packet = _inputQueueB.front();
 		_inputQueueB.pop();
-		cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+		//cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
 		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
 		Dispatcher::QueuePacketDownload(nodeA->GetId(), _id, packet, (int)ceil(pDelay + tDelay));
@@ -139,7 +129,7 @@ void NetworkLink::Propagate()
 			return;
 		}
 		_outputQueueA.pop();
-		cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+		//cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeA->RoutePacket(packet);
 	}
 
@@ -153,7 +143,7 @@ void NetworkLink::Propagate()
 			return;
 		}
 		_outputQueueB.pop();
-		cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+		//cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeB->RoutePacket(packet);
 	}
 }

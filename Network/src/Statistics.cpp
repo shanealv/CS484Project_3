@@ -29,7 +29,7 @@ void Statistics::RegisterArrival(int src, int dest, int delay)
 void Statistics::PrintAveDelay()
 {
 	for(int i = 0; i < pairs.size(); i++)
-		cout << "\t(" << pairs[i]->_src << "," << pairs[i]->_dest
+		cout << "\t(" << setw(3) << pairs[i]->_src << "," << setw(3) << pairs[i]->_dest
 			<< "): " << (double)(pairs[i]->_totalDelay) / pairs[i]->_arrived
 			<< endl;
 }
@@ -37,7 +37,7 @@ void Statistics::PrintAveDelay()
 void Statistics::PrintLossRate()
 {
 	for(int i = 0; i < pairs.size(); i++)
-		cout << "\t(" << pairs[i]->_src << "," << pairs[i]->_dest
+		cout << "\t(" << setw(3) << pairs[i]->_src << "," << setw(3) << pairs[i]->_dest
 			<< "): " << 1.0 - (double)(pairs[i]->_arrived) / pairs[i]->_attempted
 			<< endl;
 }

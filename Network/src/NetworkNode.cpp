@@ -62,7 +62,7 @@ void NetworkNode::RoutePacket(shared_ptr<Packet> packet)
 	// determine the next link to forward the packet
 	int linkIdx = _routingTable[destination];
 
-	cout << "[NetworkNode][" << _id << "] Routing to " << packet->GetDestination() << " via " << linkIdx << endl;
+	//cout << "[NetworkNode][" << _id << "] Routing to " << packet->GetDestination() << " via " << linkIdx << endl;
 
 	// queue up the packet to load into the input queue
 	double processingDelay = RandomGen::Exponential(1.0);
@@ -71,7 +71,7 @@ void NetworkNode::RoutePacket(shared_ptr<Packet> packet)
 
 void NetworkNode::CreateAndSendPacket(int destination)
 {
-	cout << "[NetworkNode][" << _id << "] Sending to " << destination << endl;
+	//cout << "[NetworkNode][" << _id << "] Sending to " << destination << endl;
 	// create and route the packet
 	int size = RandomGen::Uniform(0.1, 1);
 	auto packet = make_shared<Packet>(size, _id, destination);
@@ -102,7 +102,7 @@ int NetworkNode::GetDroppedPackets()
 
 void NetworkNode::DropPacket()
 {
-	cout << "[NetworkNode][" << _id << "] Dropped Packet!!!" << endl;
+	cout << "[NetworkNode][" << _id << "] Dropped Packet!!!!" << endl;
 	_droppedPackets++;
 }
 

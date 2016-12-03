@@ -142,44 +142,44 @@ int main(int argc, char* argv[])
 	//Simulate 1000 iterations of the network
 	vector<shared_ptr<Job>> dueJobs;
 
-	for (int time = 1; time < 200; time++)
+	for (int time = 1; time < 1000; time++)
 	{
 		//Do due jobs
 		dueJobs = Dispatcher::GetDueJobs();
 		for (int i = 0; i < dueJobs.size(); i++)
 		{
-			cout << "[main][" << setw(4) << time << "] got job of type ";
+			//cout << "[main][" << setw(4) << time << "] got job of type ";
 			//do job
 			switch (dueJobs[i]->GetType())
 			{
 			case JobType::PacketCreation:
-				cout << "Packet Creation" << endl;
+				//cout << "Packet Creation" << endl;
 				nodes[dueJobs[i]->GetNodeId()]->CreateAndSendPacket(dueJobs[i]->GetDestId());
 				break;
 			case JobType::PacketProcessing:
-				cout << "Packet Processing" << endl;
+				//cout << "Packet Processing" << endl;
 				nodes[dueJobs[i]->GetNodeId()]->RoutePacket(dueJobs[i]->GetPacket());
 				break;
 			case JobType::PacketUpload:
-				cout << "Packet Upload" << endl;
+				//cout << "Packet Upload" << endl;
 				edges[dueJobs[i]->GetLinkId()]->AddToInputQueue(dueJobs[i]->GetNodeId(), dueJobs[i]->GetPacket());
 				break;
 			case JobType::PacketDownload:
-				cout << "Packet Download" << endl;
+				//cout << "Packet Download" << endl;
 				edges[dueJobs[i]->GetLinkId()]->AddToOutputQueue(dueJobs[i]->GetNodeId(), dueJobs[i]->GetPacket());
 				break;
 			case JobType::None:
-				cout << "None" << endl;
+				//cout << "None" << endl;
 				break;
-			default:
-				cout << "unrecognized job" << endl;
+			//default:
+				//cout << "unrecognized job" << endl;
 				//exit(1);
 			}
 		}
 
 		//Prepare for next iteration
 		//propagate every edge
-		cout << "[main][" << setw(4) << time << "] Propagating " << endl << endl;
+		//cout << "[main][" << setw(4) << time << "] Propagating " << endl << endl;
 		for (int i = 0; i < numEdges; i++)
 			edges[i]->Propagate();
 		//Other cleanup
