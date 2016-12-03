@@ -3,7 +3,7 @@ CC = g++
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
-CC_FLAGS := -std=c++0x -g -DDEBUG -rdynamic
+CC_FLAGS := -std=c++0x -g #-DDEBUG
 all: ./obj main.exe
 
 ./obj:

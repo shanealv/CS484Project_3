@@ -38,7 +38,7 @@ public:
 	void AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet);
 	void AddToOutputQueue(int destinationId, std::shared_ptr<Packet> packet);
 
-	void Propagate();
+	void Propagate(); // move packets from the queues to transmission or processing
 
 	int GetNumPackets();
 	int GetDroppedPackets();

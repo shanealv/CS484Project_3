@@ -55,18 +55,19 @@ std::queue<std::shared_ptr<Packet>>& NetworkLink::GetOutputQueue(int destination
 
 void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet)
 {
-	//cout << "[NetworkLink][" << _id << "] INPUT Queuing Packet heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+	cout << "[NetworkLink][" << _id << "] INPUT Queuing Packet heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	auto& queue = GetInputQueue(sourceId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
 	{
-		cout << "KEPT " << size << " / " << NetworkLink::QueueLimit << endl;
 		queue.push(packet);
 		return;
 	}
-	cout << "DROPPED" << endl;
+
 	// drop packet
 	if (nodeA->GetId() == sourceId)
 		nodeA->DropPacket();
@@ -76,19 +77,19 @@ void NetworkLink::AddToInputQueue(int sourceId, std::shared_ptr<Packet> packet)
 
 void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet> packet)
 {
-	//cout << "[NetworkLink][" << _id << "] OUTPUT Queuing Packet heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+	cout << "[NetworkLink][" << _id << "] OUTPUT Queuing Packet heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	auto& queue = GetOutputQueue(destinationId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
 	{
-		cout << "KEPT " << size << " / " << NetworkLink::QueueLimit << endl;
 		queue.push(packet);
 		return;
 	}
 
-	cout << "DROPPED" << endl;
 	// drop packet
 	if (nodeA->GetId() == destinationId)
 		nodeA->DropPacket();
@@ -107,7 +108,9 @@ void NetworkLink::Propagate()
 		{
 			auto packet = _inputQueueA.front();
 			_inputQueueA.pop();
-			//cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+			cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 			double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
 			double tDelay = packet->GetSize() / _bandwidth; // transmission delay
 			_inputDelayA = (int)ceil(pDelay + tDelay);
@@ -126,7 +129,9 @@ void NetworkLink::Propagate()
 		{
 			auto packet = _inputQueueB.front();
 			_inputQueueB.pop();
-			//cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+			cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 			double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
 			double tDelay = packet->GetSize() / _bandwidth; // transmission delay
 			_inputDelayB = (int)ceil(pDelay + tDelay);
@@ -143,7 +148,9 @@ void NetworkLink::Propagate()
 	{
 		auto packet = _outputQueueA.front();
 		_outputQueueA.pop();
-		//cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+		cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 		nodeA->RoutePacket(packet);
 	}
 
@@ -152,7 +159,9 @@ void NetworkLink::Propagate()
 	{
 		auto packet = _outputQueueB.front();
 		_outputQueueB.pop();
-		//cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#ifdef DEBUG
+		cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+#endif // DEBUG
 		nodeB->RoutePacket(packet);
 	}
 }
