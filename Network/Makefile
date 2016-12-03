@@ -4,25 +4,24 @@ CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
 CC_FLAGS := -std=c++0x -g #-DDEBUG
-all: ./obj main.exe
+all: ./obj NetSim
 
 ./obj:
 	mkdir obj
 
-main.exe: $(OBJ_FILES)
+NetSim: $(OBJ_FILES)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
 obj/%.o: src/%.cpp
 	$(CC) $(CC_FLAGS) -c $^ -o $@
 
 clean:
-	rm -f -r obj main.exe
+	rm -f -r obj NetSim
 
 rebuild: clean all
 
 test: all
-	./main.exe testGraph.txt 0
-
+	./NetSim testGraph.txt 0
 
 run: all
-	./main.exe graph.g 123412341234
+	./NetSim graph.g 123412341234
