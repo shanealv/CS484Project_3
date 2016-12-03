@@ -19,6 +19,9 @@ NetworkLink::NetworkLink(int id, shared_ptr<NetworkNode>& nodeA, shared_ptr<Netw
 	_bandwidth = RandomGen::Uniform();
 	if (_bandwidth == 0.0)
 		_bandwidth = 1.0;
+
+	_inputDelayA = 0;
+	_inputDelayB = 0;
 }
 
 double NetworkLink::GetBandwidth()
@@ -79,7 +82,7 @@ void NetworkLink::AddToOutputQueue(int destinationId, std::shared_ptr<Packet> pa
 	auto& queue = GetOutputQueue(destinationId);
 	int size = queue.size();
 	if (size < NetworkLink::QueueLimit)
-	{	
+	{
 		cout << "KEPT " << size << " / " << NetworkLink::QueueLimit << endl;
 		queue.push(packet);
 		return;
@@ -98,36 +101,47 @@ void NetworkLink::Propagate()
 	auto nodeA = _nodeA.lock();
 	auto nodeB = _nodeB.lock();
 	// Input queue A to output queue B
-	if (!_inputQueueA.empty())
+	if (_inputDelayA <= 0)
 	{
-		auto packet = _inputQueueA.front();
-		_inputQueueA.pop();
-		//cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
-		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
-		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
-		Dispatcher::QueuePacketDownload(nodeB->GetId(), _id, packet, (int)ceil(pDelay + tDelay));
+		if (!_inputQueueA.empty())
+		{
+			auto packet = _inputQueueA.front();
+			_inputQueueA.pop();
+			//cout << "[NetworkLink][" << _id << "] InputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+			double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
+			double tDelay = packet->GetSize() / _bandwidth; // transmission delay
+			_inputDelayA = (int)ceil(pDelay + tDelay);
+			Dispatcher::QueuePacketDownload(nodeB->GetId(), _id, packet, _inputDelayA);
+		}
+	}
+	else
+	{
+		_inputDelayA--;
 	}
 
 	// Input queue B to output queue A
-	if (!_inputQueueB.empty())
+	if (_inputDelayB <= 0)
 	{
-		auto packet = _inputQueueB.front();
-		_inputQueueB.pop();
-		//cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
-		double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
-		double tDelay = packet->GetSize() / _bandwidth; // transmission delay
-		Dispatcher::QueuePacketDownload(nodeA->GetId(), _id, packet, (int)ceil(pDelay + tDelay));
+		if (!_inputQueueB.empty())
+		{
+			auto packet = _inputQueueB.front();
+			_inputQueueB.pop();
+			//cout << "[NetworkLink][" << _id << "] InputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
+			double pDelay = RandomGen::Uniform(1.0, 10.0); // propagation delay
+			double tDelay = packet->GetSize() / _bandwidth; // transmission delay
+			_inputDelayB = (int)ceil(pDelay + tDelay);
+			Dispatcher::QueuePacketDownload(nodeA->GetId(), _id, packet, _inputDelayB);
+		}
+	}
+	else
+	{
+		_inputDelayB--;
 	}
 
 	// Output queue A to node A routing
 	if (!_outputQueueA.empty())
 	{
 		auto packet = _outputQueueA.front();
-		if (packet.get() == NULL) 
-		{
-			cout << "MISSING PACKET!" << endl;
-			return;
-		}
 		_outputQueueA.pop();
 		//cout << "[NetworkLink][" << _id << "] OutputQueueA (" << nodeA->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeA->RoutePacket(packet);
@@ -137,11 +151,6 @@ void NetworkLink::Propagate()
 	if (!_outputQueueB.empty())
 	{
 		auto packet = _outputQueueB.front();
-		if (packet.get() == NULL) 
-		{
-			cout << "MISSING PACKET!" << endl;
-			return;
-		}
 		_outputQueueB.pop();
 		//cout << "[NetworkLink][" << _id << "] OutputQueueB (" << nodeB->GetId() << ") Packet Found heading to " << packet->GetDestination() << endl;
 		nodeB->RoutePacket(packet);

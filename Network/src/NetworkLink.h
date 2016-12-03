@@ -16,6 +16,8 @@ private:
 	int _droppedPackets = 0;
 	int _totalDelay = 0;
 	double _bandwidth;
+	int _inputDelayA;
+	int _inputDelayB;
 	std::weak_ptr<NetworkNode> _nodeA; // does not own pointer, but can reasonable expect them to exist
 	std::weak_ptr<NetworkNode> _nodeB; // does not own pointer, but can reasonable expect them to exist
 	std::queue<std::shared_ptr<Packet>> _inputQueueA;
