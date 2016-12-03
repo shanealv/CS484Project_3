@@ -2,9 +2,20 @@
 
 ######## Graph Generator ########
 
-## Compile and run instructions
-To compile, simply use the 'make' command from the Makefile. 
-To run the program, use the 'make run' command. 
+## Building the project
+The Graph Generator project can be found in the "Graph_Generator" folder.
+Included in the project folder is a makefile (to build the project), and the source code for the project.
+To build the project, use the following command:
+	
+	make
+
+## Running the Project
+To run the project, use the command
+
+	./generator
+or
+	make run
+
 The 'make run' command will also compile the code if it has not already been compiled. 
 When the program finishes, there will be a file called "graph.g" that defines a graph in the format specified by the assignment.
 
